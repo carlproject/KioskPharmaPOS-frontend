@@ -36,7 +36,7 @@ function Hero() {
             </a>
           </div>
 
-          <div className="w-full md:w-1/2 mt-8 md:mt-8 md:absolute right-10">
+          <div className="w-full md:w-1/2 mt-8 md:mt-8 md:absolute right-[-90px]">
             <img
               src="../../src/assets/img/doctor.png"
               alt="Doctor Holding Pills"
@@ -50,6 +50,3 @@ function Hero() {
 }
 
 export default Hero
-
-
-

@@ -5,7 +5,7 @@ function Heading() {
     <section className="lg:pt-20 pt-0 h-full">
     <div className="rounded-2xl bg-indigo-50 py-10 overflow-hidden m-5 lg:m-0 2xl:py-16 xl:py-8 lg:rounded-tl-2xl lg:rounded-bl-2xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-14 items-center lg:grid-cols-12 lg:gap-32">
+        <div className="grid grid-cols-1 gap-4 items-center lg:grid-cols-12">
           <div className="w-full xl:col-span-5 lg:col-span-6 2xl:-mx-5 xl:-mx-0">
             <div className="flex items-center text-sm font-medium text-gray-500 justify-center lg:justify-start">
               <span className="bg-indigo-600 py-1 px-3 rounded-2xl text-xs font-medium text-white mr-3">#1</span>
