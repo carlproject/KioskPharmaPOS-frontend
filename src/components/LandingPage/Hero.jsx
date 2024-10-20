@@ -5,7 +5,6 @@ function Hero() {
     <div className="text-white w-full">
       <div className="bg-green-900 p-[145px] min-h-[50vh] flex items-center justify-center">
         <div className="flex flex-col md:flex-row items-center mr-2 justify-between w-full">
-          {/* Text Section */}
           <div className="w-full md:w-1/2">
             <h1 className="text-4xl font-bold mb-4">
               Your Prescription for Affordable Health Solutions!
@@ -37,7 +36,6 @@ function Hero() {
             </a>
           </div>
 
-          {/* Image Section */}
           <div className="w-full md:w-1/2 mt-8 md:mt-8 md:absolute right-10">
             <img
               src="../../src/assets/img/doctor.png"
