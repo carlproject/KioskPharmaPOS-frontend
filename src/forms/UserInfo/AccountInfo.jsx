@@ -1,4 +1,4 @@
-import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid'
+//import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid'
 
 export default function AccountInfo() {
   return (

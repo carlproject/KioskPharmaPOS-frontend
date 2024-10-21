@@ -14,7 +14,8 @@ function AppRoutes() {
       <Route path='/' Component={LandingPage}/>
       <Route path='/login' Component={Login}/>
       <Route path='/register' Component={Register}/>
-      <Route path='/forgot-password' Component={Cart}/>
+      <Route path='/forgot-password' Component={ForgetPassword}/>
+      <Route path='/cart' Component={Cart}/>
       </Routes>
     </Router>
   )
