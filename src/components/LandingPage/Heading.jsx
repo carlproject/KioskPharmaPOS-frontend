@@ -2,7 +2,7 @@ import React from 'react'
 
 function Heading() {
   return (
-    <section className="lg:pt-20 pt-0 h-full">
+    <section className=" pt-0 h-full">
     <div className="rounded-2xl bg-indigo-50 py-10 overflow-hidden m-5 lg:m-0 2xl:py-16 xl:py-8 lg:rounded-tl-2xl lg:rounded-bl-2xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-4 items-center lg:grid-cols-12">

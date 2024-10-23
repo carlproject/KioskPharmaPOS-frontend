@@ -4,18 +4,22 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
 import LoginComponent from '../components/authComponents/LoginComponent';
+import { useNavigate  } from 'react-router-dom';
 
 const provider = new GoogleAuthProvider();
 const auth = getAuth(app);
 
+
 function Login() {
   const [loginError, setLoginError] = useState('');
+  const navigate = useNavigate();
 
   const signInWithGoogle = async (e) => {
     e.preventDefault();
     try {
       const result = await signInWithPopup(auth, provider);
-      console.log(result.user);
+      const user = result.user;
+      navigate('/', { state: { user: {uid: user.uid, displayName: user.displayName, email: user.email } } });
     } catch (error) {
       console.log('Something went wrong', error);
     }
@@ -38,7 +42,9 @@ function Login() {
       const isPasswordCorrect = await bcrypt.compare(password, hashedPassword);
 
       if (isPasswordCorrect) {
-        console.log('Login successful!');
+        alert('Login Successful');
+        console.log(userData)
+        navigate('/', { state: { user: userData }});
       } else {
         setLoginError('Incorrect password');
       }
