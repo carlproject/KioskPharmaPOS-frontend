@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage';
 import AccountInfo from './forms/UserInfo/AccountInfo';
 import Cart from './components/pos/Cart';
 import RegisterPage from './pages/RegisterPage';
+import MeetTheTeam from './components/MeetTheTeam';
 
 function AppRoutes() {
   return (
@@ -15,6 +16,7 @@ function AppRoutes() {
       <Route path='/login' Component={Login}/>
       <Route path='/register' Component={RegisterPage}/>
       <Route path='/forgot-password' Component={ForgetPassword}/>
+      <Route path='/meet-the-team' Component={MeetTheTeam}/>
       <Route path='/cart' Component={Cart}/>
       </Routes>
     </Router>
