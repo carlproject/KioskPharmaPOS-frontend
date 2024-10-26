@@ -15,7 +15,6 @@ function LandingPage() {
   console.log("User data:", user);
   return (
     <div className='w-full overflow-hidden overflow-x-hidden'>
-    <Nav />
     <Hero />
     <Gallery />
     <Heading />
