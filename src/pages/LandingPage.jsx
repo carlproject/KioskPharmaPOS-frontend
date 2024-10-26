@@ -6,16 +6,18 @@ import Feature from '../components/LandingPage/Feature'
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import { useLocation } from 'react-router-dom'
+import Gallery from '../components/LandingPage/Gallery'
 
 function LandingPage() {
   const location = useLocation();
   const { user } = location || {};
-
+  
   console.log("User data:", user);
   return (
     <div className='w-full overflow-hidden overflow-x-hidden'>
     <Nav />
     <Hero />
+    <Gallery />
     <Heading />
     <Feature />
     <Footer />

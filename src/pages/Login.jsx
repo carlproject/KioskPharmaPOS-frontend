@@ -14,12 +14,13 @@ function Login() {
   const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
 
+
   const signInWithGoogle = async (e) => {
     e.preventDefault();
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      navigate('/', { state: { user: {uid: user.uid, displayName: user.displayName, email: user.email } } });
+      navigate('/', { state: { user: {uid: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL } } });
     } catch (error) {
       console.log('Something went wrong', error);
     }
@@ -64,3 +65,5 @@ function Login() {
 }
 
 export default Login;
+
+
