@@ -9,10 +9,10 @@ function Feature() {
           Features
         </span>
         <h2 className="text-4xl text-center font-bold text-gray-900 py-5">
-          Revolutionary Features
+        Innovative Features
         </h2>
         <p className="text-lg font-normal text-gray-500 max-w-md md:max-w-2xl mx-auto">
-          Provides advanced features like time tracking, integrating with third-party apps (calendar / Google drive), creating subtasks.
+        Offers cutting-edge functionalities such as prescription tracking, integration with third-party applications (like scheduling tools and cloud storage), and the ability to manage multiple prescriptions as subtasks.
         </p>
       </div>
 
@@ -37,10 +37,10 @@ function Feature() {
             </svg>
           </div>
           <h4 className="text-lg font-medium text-gray-900 mb-3 capitalize">
-            Revolutionary Projectview
+          Custom Workflow Management
           </h4>
           <p className="text-sm font-normal text-gray-500">
-            Plan and structure work how you want. Quickly organizing tasks.
+          Organize and streamline your pharmacy tasks to fit your operations, allowing for efficient task management.
           </p>
         </div>
 
@@ -77,10 +77,10 @@ function Feature() {
             </svg>
           </div>
           <h4 className="text-lg font-medium text-gray-900 mb-3 capitalize">
-            App Integrations
+          Seamless App Integrations
           </h4>
           <p className="text-sm font-normal text-gray-500">
-            Bring all your tools and data together. Also join with hundreds of other apps.
+          Consolidate all your pharmacy tools and data, easily connecting with numerous other applications to enhance functionality.
           </p>
         </div>
 
@@ -104,10 +104,10 @@ function Feature() {
             </svg>
           </div>
           <h4 className="text-lg font-medium text-gray-900 mb-3 capitalize">
-            Real-Time Reporting
+          Instant Performance Insights
           </h4>
           <p className="text-sm font-normal text-gray-500">
-            Gain new insights into your team's performance with time-tracking.
+          Access real-time reporting to gain valuable insights into your pharmacy's operations and staff efficiency through time-tracking.
           </p>
         </div>
       </div>

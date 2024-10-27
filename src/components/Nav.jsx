@@ -18,7 +18,7 @@ function Nav() {
   }
 
   const [user, setUser] = useState(null);
- const [dropdownOpen, setDropdownOpen] = useState(true);
+ const [dropdownOpen, setDropdownOpen] = useState(false);
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };

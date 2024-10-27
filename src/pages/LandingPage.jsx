@@ -14,8 +14,8 @@ function LandingPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-
-      const storedUser = localStorage.getItem('user');
+      
+      const storedUser = localStorage.getItem('user'); // get the localStorage
       if (storedUser) {
         setStoreUser(JSON.parse(storedUser));
       }

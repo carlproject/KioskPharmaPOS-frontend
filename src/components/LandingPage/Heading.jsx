@@ -9,13 +9,13 @@ function Heading() {
           <div className="w-full xl:col-span-5 lg:col-span-6 2xl:-mx-5 xl:-mx-0">
             <div className="flex items-center text-sm font-medium text-gray-500 justify-center lg:justify-start">
               <span className="bg-indigo-600 py-1 px-3 rounded-2xl text-xs font-medium text-white mr-3">#1</span>
-              Investment app
+              Pharmacy App
             </div>
             <h1 className="py-8 text-center text-gray-900 font-bold font-manrope text-5xl lg:text-left leading-[70px]">
-              The new standard for <span className="text-indigo-600">Modern investor</span>
+              The new standard for <span className="text-indigo-600">Modern Pharmacy Management</span>
             </h1>
             <p className="text-gray-500 text-lg text-center lg:text-left">
-              When you’re ready to invest, quickly execute your orders with Complex and outdated.
+            When you’re ready to improve your pharmacy services, swiftly manage prescriptions and transactions with intuitive and efficient tools.
             </p>
             <div className="relative p-1.5 my-10 flex items-center gap-y-4 h-auto md:h-16 flex-col md:flex-row justify-between rounded-full md:shadow-[0px 15px 30px -4px rgba(16, 24, 40, 0.03)] border border-transparent md:bg-white transition-all duration-500 hover:border-indigo-600 focus-within:border-indigo-600">
               <input
