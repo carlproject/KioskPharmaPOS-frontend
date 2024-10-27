@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { app, analytics, db } from '../config/firebase';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
 import LoginComponent from '../components/authComponents/LoginComponent';
 import { useNavigate  } from 'react-router-dom';
@@ -19,6 +19,14 @@ function Login() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, {
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL
+      }, { merge: true });
       navigate('/', { state: { user: {uid: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL } } });
     } catch (error) {
       console.log('Something went wrong', error);

@@ -1,8 +1,22 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import Logo from '../assets/img/logo.png'
+import { auth } from '../config/firebase';
 
 function Nav() {
+  const [user, setUser] = useState(null);
+
+  const toggleDropdown = () => {
+    setDropdownOpen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const location = useLocation();
   return (
     <nav className="bg-white dark:bg-gray-900 dark:border-blue-500">
@@ -12,12 +26,80 @@ function Nav() {
         <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Checacio</span>
       </a>
       <div className="flex md:order-2 gap-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-        <a href='/login' className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-          Get started
-        </a>
-        <a href='/login' className="text-white border-blue-600 bg-transparent hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:border-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-          Login
-        </a>
+       {user ? (
+         <>
+         <button
+           type="button"
+           className="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+           id="user-menu-button"
+           aria-expanded="false"
+           data-dropdown-toggle="user-dropdown"
+           data-dropdown-placement="bottom"
+           onClick={toggleDropdown}
+         >
+           <span className="sr-only">Open user menu</span>
+           <img className="w-8 h-8 rounded-full" src={user.photoURL} alt="user photo" />
+         </button>
+         <div
+           className="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
+           id="user-dropdown"
+         >
+           <div className="px-4 py-3">
+             <span className="block text-sm text-gray-900 dark:text-white">{user.displayName || 'User'}</span>
+             <span className="block text-sm text-gray-500 truncate dark:text-gray-400">{user.email}</span>
+           </div>
+           <ul className="py-2" aria-labelledby="user-menu-button">
+             <li>
+               <a
+                 href="#"
+                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+               >
+                 Dashboard
+               </a>
+             </li>
+             <li>
+               <a
+                 href="#"
+                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+               >
+                 Settings
+               </a>
+             </li>
+             <li>
+               <a
+                 href="#"
+                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+               >
+                 Earnings
+               </a>
+             </li>
+             <li>
+               <a
+                 href="#"
+                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+               >
+                 Sign out
+               </a>
+             </li>
+           </ul>
+         </div>
+       </>
+      ) : (
+        <div>
+          <a
+            href="/login"
+            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Get started
+          </a>
+          <a
+            href="/login"
+            className="text-white border-blue-600 bg-transparent hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:border-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Login
+          </a>
+        </div>
+      )}
         <button
           data-collapse-toggle="navbar-cta"
           type="button"
