@@ -27,6 +27,14 @@ function Login() {
         email: user.email,
         photoURL: user.photoURL
       }, { merge: true });
+
+      localStorage.setItem('user', JSON.stringify({
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL
+      }));
+
       navigate('/', { state: { user: {uid: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL } } });
     } catch (error) {
       console.log('Something went wrong', error);
@@ -50,8 +58,7 @@ function Login() {
       const isPasswordCorrect = await bcrypt.compare(password, hashedPassword);
 
       if (isPasswordCorrect) {
-        alert('Login Successful');
-        console.log(userData)
+        localStorage.setItem('user', JSON.stringify(userData));
         navigate('/', { state: { user: userData }});
       } else {
         setLoginError('Incorrect password');

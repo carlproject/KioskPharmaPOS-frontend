@@ -12,9 +12,9 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_APP_FIREBASE_MEASUREMENT_ID
+  measurementId: import.meta.env.VITE_APP_FIREBASE_MEASUREMENT_ID,
+  databaseURL: import.meta.env.VITE_APP_FIREBASE_DATABASE_URL
 };
-
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);

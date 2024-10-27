@@ -2,12 +2,25 @@ import React, { useEffect, useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import Logo from '../assets/img/logo.png'
 import { auth } from '../config/firebase';
+import { getAuth, signOut } from 'firebase/auth';
 
 function Nav() {
-  const [user, setUser] = useState(null);
 
+  const handLogout = async() => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      localStorage.removeItem('user');
+      alert("User signed out successfully.");
+    } catch (error) {
+      console.log("Error signing out", error);
+    }
+  }
+
+  const [user, setUser] = useState(null);
+ const [dropdownOpen, setDropdownOpen] = useState(true);
   const toggleDropdown = () => {
-    setDropdownOpen((prev) => !prev);
+    setDropdownOpen(!dropdownOpen);
   };
 
   useEffect(() => {
@@ -19,7 +32,7 @@ function Nav() {
 
   const location = useLocation();
   return (
-    <nav className="bg-white dark:bg-gray-900 dark:border-blue-500">
+    <nav className="bg-white dark:bg-gray-900 dark:border-blue-500 border-b-2" style={{ borderColor: '#28A745' }}>
     <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">
         <img src={Logo} className="h-8" alt="Flowbite Logo" />
@@ -27,63 +40,35 @@ function Nav() {
       </a>
       <div className="flex md:order-2 gap-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
        {user ? (
-         <>
-         <button
-           type="button"
-           className="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-           id="user-menu-button"
-           aria-expanded="false"
-           data-dropdown-toggle="user-dropdown"
-           data-dropdown-placement="bottom"
-           onClick={toggleDropdown}
-         >
-           <span className="sr-only">Open user menu</span>
-           <img className="w-8 h-8 rounded-full" src={user.photoURL} alt="user photo" />
-         </button>
-         <div
-           className="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
-           id="user-dropdown"
-         >
-           <div className="px-4 py-3">
-             <span className="block text-sm text-gray-900 dark:text-white">{user.displayName || 'User'}</span>
-             <span className="block text-sm text-gray-500 truncate dark:text-gray-400">{user.email}</span>
-           </div>
-           <ul className="py-2" aria-labelledby="user-menu-button">
-             <li>
-               <a
-                 href="#"
-                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-               >
-                 Dashboard
-               </a>
-             </li>
-             <li>
-               <a
-                 href="#"
-                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-               >
-                 Settings
-               </a>
-             </li>
-             <li>
-               <a
-                 href="#"
-                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-               >
-                 Earnings
-               </a>
-             </li>
-             <li>
-               <a
-                 href="#"
-                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-               >
-                 Sign out
-               </a>
-             </li>
-           </ul>
-         </div>
-       </>
+        <div>
+        <button
+          onClick={toggleDropdown}
+          className="flex items-center space-x-2 p-2 bg-gray-800 rounded-full text-white focus:outline-none"
+        >
+          <img src={user.photoURL || '/default-avatar.png'} className="w-8 h-8 rounded-full" alt="User" />
+          <span>{user.displayName || 'User'}</span>
+        </button>
+
+        {dropdownOpen && (
+          <div className="absolute right-0 mt-2 mr-2 w-48 bg-white rounded-lg shadow-lg border dark:bg-gray-800">
+            <div className="p-4 text-sm text-gray-700 dark:text-gray-300 border-b">
+              <p>{user.displayName || 'User'}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+            </div>
+            <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
+              <li>
+                <a href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+              </li>
+              <li>
+                <a href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Settings</a>
+              </li>
+              <li>
+                <button onClick={handLogout} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Sign Out</button>
+              </li>
+            </ul>
+          </div>
+        )}
+      </div>
       ) : (
         <div>
           <a

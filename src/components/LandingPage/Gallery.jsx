@@ -52,9 +52,6 @@ function Gallery() {
         </p>
       </div>
     </div>
-    <button className="w-full rounded-lg py-4 px-6 text-center bg-indigo-100 text-lg font-medium text-indigo-600 transition-all duration-300 hover:text-white hover:bg-indigo-600">
-      Load More
-    </button>
   </div>
 </section>
 
