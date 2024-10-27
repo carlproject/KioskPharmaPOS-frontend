@@ -14,7 +14,6 @@ function Login() {
   const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
 
-
   const signInWithGoogle = async (e) => {
     e.preventDefault();
     try {
@@ -61,6 +60,7 @@ function Login() {
       signInWithUsernameAndPassword={signInWithUsernameAndPassword}
       loginError={loginError}
     />
+    
   );
 }
 

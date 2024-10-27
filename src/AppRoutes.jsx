@@ -24,12 +24,6 @@ function AppRoutes() {
           <Route path="/contact-us" Component={Contact} />
         </Route>
       
-
-
-
-
-      <Route path='/cart' Component={Cart}/>
-
       <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

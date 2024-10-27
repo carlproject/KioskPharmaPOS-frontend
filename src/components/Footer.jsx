@@ -1,4 +1,5 @@
 import React from 'react'
+import logo from '../assets/img/logo.png'
 
 function Footer() {
   return (
@@ -7,7 +8,7 @@ function Footer() {
       <div className="md:flex md:justify-between">
         <div className="mb-6 md:mb-0">
             <a href="#" className="flex items-center">
-                <img src="https://flowbite.com/docs/images/logo.svg" className="h-8 me-3" alt="FlowBite Logo" />
+                <img src={logo} className="h-8 me-3" alt="Checacio Logo" />
                 <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Chechacio</span>
             </a>
         </div>
@@ -16,10 +17,10 @@ function Footer() {
                 <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Resources</h2>
                 <ul className="text-gray-500 dark:text-gray-400 font-medium">
                     <li className="mb-4">
-                        <a href="https://flowbite.com/" className="hover:underline">Flowbite</a>
+                        <a href="#" className="hover:underline">Checacio</a>
                     </li>
                     <li>
-                        <a href="https://tailwindcss.com/" className="hover:underline">Tailwind CSS</a>
+                        <a href="#" className="hover:underline">Tailwind CSS</a>
                     </li>
                 </ul>
             </div>
@@ -27,10 +28,10 @@ function Footer() {
                 <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Follow us</h2>
                 <ul className="text-gray-500 dark:text-gray-400 font-medium">
                     <li className="mb-4">
-                        <a href="https://github.com/themesberg/flowbite" className="hover:underline ">Github</a>
+                        <a href="https://github.com/abfasb" className="hover:underline ">Github</a>
                     </li>
                     <li>
-                        <a href="https://discord.gg/4eeurUVvTy" className="hover:underline">Discord</a>
+                        <a href="#" className="hover:underline">Discord</a>
                     </li>
                 </ul>
             </div>

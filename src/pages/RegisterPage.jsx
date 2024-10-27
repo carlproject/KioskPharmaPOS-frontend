@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db } from '../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import bcrypt from 'bcryptjs'
+import Img from '../assets/img/bg-auth.png'
 
 function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -40,7 +41,11 @@ function RegisterPage() {
   };
 
   return (
-    <section className="bg-gray-50 :bg-gray-50">
+    <section className="bg-gray-50 :bg-gray-50" style={{backgroundImage: `url(${Img})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    height: '100vh',
+    width: '100%',}}>
   <div className="flex flex-col items-center justify-center px-4 py-6 mx-auto md:h-screen lg:py-0">
     <div className="w-full bg-white rounded-lg shadow :border sm:max-w-sm md:mt-0 :bg-gray-800 :border-gray-700">
       <div className="p-4 space-y-4 md:space-y-4 sm:p-6">
