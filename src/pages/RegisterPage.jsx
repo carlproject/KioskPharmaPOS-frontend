@@ -22,6 +22,17 @@ function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.firstName || !formData.lastName || !formData.username || !formData.password || !formData.confirmPassword) {
+      alert('All fields are required');
+      return;
+    }
+  
+    if (formData.password.length < 8) {
+      alert('Password must be at least 8 characters long');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match');
       return;

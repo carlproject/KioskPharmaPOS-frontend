@@ -58,7 +58,10 @@ function Login() {
       const isPasswordCorrect = await bcrypt.compare(password, hashedPassword);
 
       if (isPasswordCorrect) {
-        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('user', JSON.stringify({
+          username: userData.username,
+          displayName: userData.FirstName + ' ' + userData.LastName
+        }));
         navigate('/', { state: { user: userData }});
       } else {
         setLoginError('Incorrect password');

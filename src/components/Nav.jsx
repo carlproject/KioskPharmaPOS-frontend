@@ -11,6 +11,7 @@ function Nav() {
     try {
       await signOut(auth);
       localStorage.removeItem('user');
+      setUser(null)
       alert("User signed out successfully.");
     } catch (error) {
       console.log("Error signing out", error);
@@ -25,7 +26,12 @@ function Nav() {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
+      if(user) {
+        setUser(user);
+      } else {
+        const localStorageUser = JSON.parse(localStorage.getItem('user'));
+        setUser(localStorageUser);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -50,7 +56,7 @@ function Nav() {
         </button>
 
         {dropdownOpen && (
-          <div className="absolute right-0 mt-2 mr-2 w-48 bg-white rounded-lg shadow-lg border dark:bg-gray-800">
+          <div className="absolute right-30 mt-2 mr-2 w-48 bg-white rounded-lg shadow-lg border dark:bg-gray-800">
             <div className="p-4 text-sm text-gray-700 dark:text-gray-300 border-b">
               <p>{user.displayName || 'User'}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
@@ -63,7 +69,7 @@ function Nav() {
                 <a href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Settings</a>
               </li>
               <li>
-                <button onClick={handLogout} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Sign Out</button>
+                <button onClick={handLogout} className="block text-start w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Sign Out</button>
               </li>
             </ul>
           </div>
@@ -72,7 +78,7 @@ function Nav() {
       ) : (
         <div>
           <a
-            href="/login"
+            href="/register"
             className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
             Get started
@@ -170,19 +176,19 @@ function Nav() {
             <ul>
                 <li>
                     <a href="#" class="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <div class="font-semibold">Online Stores</div>
+                        <div class="font-semibold">Prescription Management</div>
                         <span class="text-sm text-gray-500 dark:text-gray-400">Connect with third-party tools that you're already using.</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <div class="font-semibold">Segmentation</div>
+                        <div class="font-semibold">Over-the-Counter Sales</div>
                         <span class="text-sm text-gray-500 dark:text-gray-400">Connect with third-party tools that you're already using.</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <div class="font-semibold">Marketing CRM</div>
+                        <div class="font-semibold">Product Catalog</div>
                         <span class="text-sm text-gray-500 dark:text-gray-400">Connect with third-party tools that you're already using.</span>
                     </a>
                 </li>
@@ -190,19 +196,19 @@ function Nav() {
             <ul>
                 <li>
                     <a href="#" class="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <div class="font-semibold">Online Stores</div>
+                        <div class="font-semibold">Order Tracking</div>
                         <span class="text-sm text-gray-500 dark:text-gray-400">Connect with third-party tools that you're already using.</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <div class="font-semibold">Segmentation</div>
+                        <div class="font-semibold">Payment Processing</div>
                         <span class="text-sm text-gray-500 dark:text-gray-400">Connect with third-party tools that you're already using.</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <div class="font-semibold">Marketing CRM</div>
+                        <div class="font-semibold">Customer Support</div>
                         <span class="text-sm text-gray-500 dark:text-gray-400">Connect with third-party tools that you're already using.</span>
                     </a>
                 </li>
@@ -210,6 +216,7 @@ function Nav() {
         </div>
     </div>
   </nav>
+  
   )
 }
 

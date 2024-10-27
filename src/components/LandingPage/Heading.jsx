@@ -1,4 +1,7 @@
 import React from 'react'
+import first from '../../assets/img/1.png'
+import two from '../../assets/img/2.png'
+import three from '../../assets/img/3.png'
 
 function Heading() {
   return (
@@ -31,19 +34,19 @@ function Heading() {
             <div className="flex items-center flex-col lg:flex-row">
               <div className="flex items-center">
                 <img
-                  src="https://pagedone.io/asset/uploads/1694846673.png"
+                  src={first}
                   alt="Rounded image"
-                  className="border-2 border-solid border-indigo-50 rounded-full relative z-50 object-cover"
+                  className="border-2 w-8 border-solid border-indigo-50 rounded-full relative z-50 object-cover"
                 />
                 <img
-                  src="https://pagedone.io/asset/uploads/1694846691.png"
+                  src={two}
                   alt="Rounded image"
-                  className="border-2 border-solid border-indigo-50 rounded-full relative z-30 -ml-3 object-cover"
+                  className="border-2 w-8 border-solid border-indigo-50 rounded-full relative z-30 -ml-3 object-cover"
                 />
                 <img
-                  src="https://pagedone.io/asset/uploads/1694846704.png"
+                  src={three}
                   alt="Rounded image"
-                  className="border-2 border-solid border-indigo-50 rounded-full relative z-20 -ml-3 object-cover"
+                  className="border-2 border-solid w-8 border-indigo-50 rounded-full relative z-20 -ml-3 object-cover"
                 />
               </div>
               <span className="mt-3 text-base text-gray-600 font-medium lg:ml-3">People have joined</span>

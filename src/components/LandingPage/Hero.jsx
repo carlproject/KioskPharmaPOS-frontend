@@ -3,10 +3,10 @@ import React from 'react';
 function Hero() {
   return (
     <div className="text-white w-full">
-      <div className="bg-green-900 p-[55px] min-h-[50vh] flex items-center justify-center">
+      <div className="bg-green-900 min-h-[40vh] flex items-center justify-center">
         <div className="flex flex-col md:flex-row items-center justify-between w-full">
-          <div className="w-full md:w-1/2">
-            <h1 className="text-4xl font-bold mb-4">
+          <div className="w-full md:w-1/2 pl-12">
+            <h1 className="text-4xl font-bold mb-4 ">
               Your Prescription for Affordable Health Solutions!
             </h1>
             <p className="text-lg mb-8">
@@ -36,7 +36,7 @@ function Hero() {
             </a>
           </div>
 
-          <div className="w-full md:w-1/2 mt-8 md:mt-0 md:ml-4">
+          <div className="w-full md:w-[43%] mt- md:mt-0 md:ml-4">
             <img
               src="../../src/assets/img/doctor.png"
               alt="Doctor Holding Pills"
