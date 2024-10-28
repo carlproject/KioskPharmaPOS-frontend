@@ -21,9 +21,9 @@ function Gallery() {
         className="sm:col-span-2 bg-cover bg-center max-md:h-80 rounded-lg flex justify-end flex-col px-7 py-6"
         style={{ backgroundImage: `url(${gallery1})` }}
       >
-        <h6 className="font-medium text-xl leading-8 text-white mb-4">Architecture Designer</h6>
+        <h6 className="font-medium text-xl leading-8 text-white mb-4">Creative Strategist</h6>
         <p className="text-base font-normal text-white/70">
-          where knowledge meets innovation, and success is sculpted through a blend of skill and vision.
+        Crafting ideas that inspire, strategies that resonate, and visions that transform into impactful experiences.
         </p>
       </div>
       <div className="block">
@@ -39,18 +39,18 @@ function Gallery() {
         className="bg-cover rounded-lg max-sm:h-80 flex justify-start flex-col px-7 py-6"
         style={{ backgroundImage: 'url(https://pagedone.io/asset/uploads/1707713043.png)' }}
       >
-        <h6 className="font-medium text-xl leading-8 text-white mb-4">Interior Designer</h6>
+        <h6 className="font-medium text-xl leading-8 text-white mb-4">Digital Visionary</h6>
         <p className="text-base font-normal text-white/70">
-          Crafting exceptional interiors, where aesthetics meet functionality for spaces that inspire and elevate.
+        Bridging technology and imagination, bringing future-forward concepts to life through innovative digital solutions.
         </p>
       </div>
       <div
         className="sm:col-span-2 bg-cover bg-center max-md:h-80 rounded-lg flex justify-end flex-col px-7 py-6"
         style={{ backgroundImage: `url(${gallery5})` }}
       >
-        <h6 className="font-medium text-xl leading-8 text-white mb-4">Architecture Designer</h6>
+        <h6 className="font-medium text-xl leading-8 text-white mb-4">Experience Curator</h6>
         <p className="text-base font-normal text-white/70">
-          where knowledge meets innovation, and success is sculpted through a blend of skill and vision.
+        Designing with purpose, every element crafted to engage, inspire, and leave a lasting impression.
         </p>
       </div>
     </div>
