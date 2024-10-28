@@ -8,6 +8,7 @@ import MeetTheTeam from './components/MeetTheTeam';
 import NavLayout from './layout/NavLayout';
 import Contact from './components/Contact';
 import ForgotPasswordComponent from './components/authComponents/ForgotPasswordComponent';
+import AdminSide from './pages/adminPage/AdminSide';
 
 function AppRoutes() {
 
@@ -24,6 +25,7 @@ function AppRoutes() {
           <Route path="/contact-us" Component={Contact} />
         </Route>
       
+      <Route path='/admin/' Component={AdminSide} />
       <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
