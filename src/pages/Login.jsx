@@ -41,17 +41,23 @@ function Login() {
     }
   };
 
-  const signInWithUsernameAndPassword = async (username, password) => {
+  const signInWithUsernameAndPassword = async (email, password) => {
+
+      if (email === 'admin' && password === 'admin') {
+
+        sessionStorage.setItem('isAdminAuthenticated', true);
+          navigate('/admin');
+      }
+
     try {
       const usersCollection = collection(db, 'users');
-      const q = query(usersCollection, where('username', '==', username));
+      const q = query(usersCollection, where('email', '==', email));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
         setLoginError('User not found');
         return;
       }
-
       const userData = querySnapshot.docs[0].data();
       const hashedPassword = userData.password;
 
@@ -59,8 +65,9 @@ function Login() {
 
       if (isPasswordCorrect) {
         localStorage.setItem('user', JSON.stringify({
-          username: userData.username,
-          displayName: userData.FirstName + ' ' + userData.LastName
+          email: userData.email,
+          displayName: userData.FirstName + ' ' + userData.LastName,
+          photoURL: 'https://humanrightsrilanka.org/wp-content/uploads/2019/04/iStock-476085198.jpg'
         }));
         navigate('/', { state: { user: userData }});
       } else {

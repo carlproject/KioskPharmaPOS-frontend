@@ -1,7 +1,16 @@
 import React from 'react';
 import logo from '../../assets/img/logo.png'
+import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
+  const navigate = useNavigate();
+  const logoutAdmin = () => {
+    sessionStorage.removeItem('isAdminAuthenticated')
+
+    navigate('/login');
+  }
+  const adminEmail = sessionStorage.getItem('adminCredentials');
+
   return (
     <>
       <nav className="fixed top-0 z-50 w-full bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -66,7 +75,7 @@ const AdminPanel = () => {
                       Matthew Balinton
                     </p>
                     <p className="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">
-                      matbalinton@gmail.com
+                      {adminEmail}
                     </p>
                   </div>
                   <ul className="py-1" role="none">
@@ -79,15 +88,9 @@ const AdminPanel = () => {
                         Dashboard
                       </a>
                     </li>
-                    <li>
-                      <a
-                        href="/sign-in"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                        role="menuitem"
-                      >
+                    <button onClick={logoutAdmin} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white">
                         Sign out
-                      </a>
-                    </li>
+                    </button>
                   </ul>
                 </div>
               </div>
@@ -106,7 +109,7 @@ const AdminPanel = () => {
             <li>
               <a
                 href="/admin-panel"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white bg-green-800 dark:hover:bg-gray-700 group"
               >
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />

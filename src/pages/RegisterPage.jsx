@@ -3,12 +3,14 @@ import { db } from '../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import bcrypt from 'bcryptjs'
 import Img from '../assets/img/bg-auth.png'
+import { useNavigate } from 'react-router-dom';
 
 function RegisterPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    username: '',
+    email: '',
     password: '',
     confirmPassword: ''
   });
@@ -23,7 +25,7 @@ function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.firstName || !formData.lastName || !formData.username || !formData.password || !formData.confirmPassword) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
       alert('All fields are required');
       return;
     }
@@ -42,10 +44,15 @@ function RegisterPage() {
       await addDoc(collection(db, 'users'), {
         FirstName: formData.firstName,
         LastName: formData.lastName,
-        username: formData.username,
+        email: formData.email,
         password: hashedPassword
       });
       setIsSuccessModalOpen(true);
+      
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      
     } catch (e) {
       console.error('Error adding document: ', e);
     }
@@ -95,13 +102,13 @@ function RegisterPage() {
             />
           </div>
           <div>
-            <label htmlFor="username" className="block mb-1 text-sm font-medium text-gray-900 :text-white">
-              Username
+            <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-900 :text-white">
+              Email
             </label>
             <input
-              type="text"
-              name="username"
-              id="username"
+              type="email"
+              name="email"
+              id="email"
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2 :bg-gray-700 :border-gray-600 :text-white"
               placeholder="username123"
               value={formData.username}

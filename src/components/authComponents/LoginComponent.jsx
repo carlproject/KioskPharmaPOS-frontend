@@ -32,11 +32,11 @@ function LoginComponent({ signInWithGoogle, signInWithUsernameAndPassword, login
     <div className="flex justify-center w-full h-full my-auto xl:gap-10 lg:justify-normal md:gap-4 draggable">
       <div className="flex items-center justify-center w-full lg:p-8">
         <div className="flex shadow-lg bg-white rounded-md items-center xl:p-8"> 
-          <form className="flex flex-col w-full h-full pb-4 text-center bg-white rounded-3xl" onSubmit={handleSubmit}> {/* Reduced pb-6 to pb-4 */}
-            <h3 className="mb-2 text-3xl font-extrabold text-dark-grey-900">Sign In</h3> {/* Reduced text size */}
-            <p className="mb-3 text-grey-700">Enter your username and password</p> {/* Adjusted margin */}
+          <form className="flex flex-col w-full h-full pb-4 text-center bg-white rounded-3xl" onSubmit={handleSubmit}> 
+            <h3 className="mb-2 text-3xl font-extrabold text-dark-grey-900">Sign In</h3>
+            <p className="mb-3 text-grey-700">Enter your username and password</p> 
             <button onClick={signInWithGoogle} className="flex items-center justify-center w-full py-3 mb-5 text-sm font-medium transition duration-300 rounded-2xl text-grey-900 bg-grey-300 hover:bg-grey-400 focus:ring-4 focus:ring-grey-300"> {/* Reduced padding */}
-              <img className="h-4 mr-2" src="https://raw.githubusercontent.com/Loopple/loopple-public-assets/main/motion-tailwind/img/logos/logo-google.png" alt="" /> {/* Reduced image size */}
+              <img className="h-4 mr-2" src="https://raw.githubusercontent.com/Loopple/loopple-public-assets/main/motion-tailwind/img/logos/logo-google.png" alt="" />
               Sign in with Google
             </button>
             <div className="flex items-center mb-2">

@@ -10,7 +10,7 @@ function Gallery() {
     <section className="py-24 relative">
   <div className="w-full max-w-7xl px-6 lg:px-8 mx-auto">
     <div className="flex items-center justify-center flex-col gap-5 mb-14">
-      <span className='bg-indigo-50 text-indigo-500 text-xs font-medium px-3.5 py-1 rounded-full'>Portfolio</span>
+      <span className='bg-indigo-50 text-indigo-500 text-xs font-medium px-3.5 py-1 rounded-full'>Gallery</span>
       <h2 className="font-manrope font-bold text-4xl text-gray-900 text-center">Efficient Service Delivery</h2>
       <p className="text-lg font-normal text-gray-500 max-w-3xl mx-auto text-center">
       In the world of automated service, kiosks provide a streamlined and user-friendly way to meet customer needs. With intuitive interfaces and efficient functionality, kiosks simplify processes, enhance accessibility, and improve customer experience across various sectors.
