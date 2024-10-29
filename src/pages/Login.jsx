@@ -46,6 +46,7 @@ function Login() {
       if (email === 'admin' && password === 'admin') {
 
         sessionStorage.setItem('isAdminAuthenticated', true);
+        sessionStorage.setItem('adminCredentials', email);
           navigate('/admin');
       }
 
@@ -56,8 +57,9 @@ function Login() {
 
       if (querySnapshot.empty) {
         setLoginError('User not found');
-        return;
+        return false;
       }
+
       const userData = querySnapshot.docs[0].data();
       const hashedPassword = userData.password;
 
@@ -70,12 +72,15 @@ function Login() {
           photoURL: 'https://humanrightsrilanka.org/wp-content/uploads/2019/04/iStock-476085198.jpg'
         }));
         navigate('/', { state: { user: userData }});
+        return true;
       } else {
         setLoginError('Incorrect password');
+        return false
       }
     } catch (error) {
       console.error('Error logging in: ', error);
       setLoginError('Something went wrong');
+      return false;
     }
   };
 

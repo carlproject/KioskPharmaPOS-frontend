@@ -2,6 +2,7 @@ import React from 'react'
 import first from '../../assets/img/1.png'
 import two from '../../assets/img/2.png'
 import three from '../../assets/img/3.png'
+import Admin from '../../assets/img/admin.png'
 
 function Heading() {
   return (
@@ -55,9 +56,9 @@ function Heading() {
           <div className="w-full xl:col-span-7 lg:col-span-6 block">
             <div className="w-full sm:w-auto lg:w-[60.8125rem] xl:ml-16">
               <img
-                src="https://pagedone.io/asset/uploads/1694846193.png"
+                src={Admin}
                 alt="Dashboard image"
-                className="rounded-l-3xl object-cover w-full lg:h-auto"
+                className="rounded-l-3xl object-cover opacity-75 w-full lg:h-auto"
               />
             </div>
           </div>

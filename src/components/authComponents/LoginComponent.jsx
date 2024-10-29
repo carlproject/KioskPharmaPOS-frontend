@@ -15,11 +15,14 @@ function LoginComponent({ signInWithGoogle, signInWithUsernameAndPassword, login
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     const { username, password } = formData;
-    signInWithUsernameAndPassword(username, password);
-    setIsSuccessModalOpen(true);
+    const signInWithUserAndPass = await signInWithUsernameAndPassword(username, password);
+
+    if(signInWithUserAndPass) {
+      isSuccessModalOpen(true);
+    }
   };
 
   return (
@@ -31,7 +34,7 @@ function LoginComponent({ signInWithGoogle, signInWithUsernameAndPassword, login
   <div className="container flex flex-col mx-auto rounded-lg pt-12 my-4"> 
     <div className="flex justify-center w-full h-full my-auto xl:gap-10 lg:justify-normal md:gap-4 draggable">
       <div className="flex items-center justify-center w-full lg:p-8">
-        <div className="flex shadow-lg bg-white rounded-md items-center xl:p-8"> 
+        <div className="flex shadow-lg p-8 bg-white rounded-md items-center xl:p-8"> 
           <form className="flex flex-col w-full h-full pb-4 text-center bg-white rounded-3xl" onSubmit={handleSubmit}> 
             <h3 className="mb-2 text-3xl font-extrabold text-dark-grey-900">Sign In</h3>
             <p className="mb-3 text-grey-700">Enter your username and password</p> 
