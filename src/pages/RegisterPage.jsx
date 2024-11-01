@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { db } from '../config/firebase';
+import { db, auth } from '../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import bcrypt from 'bcryptjs'
 import Img from '../assets/img/bg-auth.png'
 import { useNavigate } from 'react-router-dom';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validation checks
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
       alert('All fields are required');
       return;
@@ -39,25 +41,34 @@ function RegisterPage() {
       alert('Passwords do not match');
       return;
     }
+
     try {
       const hashedPassword = await bcrypt.hash(formData.password, 10);
+      // Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user; // This is the newly created user
+
+      // Save user details to Firestore
       await addDoc(collection(db, 'users'), {
+        uid: user.uid, // Save the user's UID from Firebase Auth
         FirstName: formData.firstName,
         LastName: formData.lastName,
         email: formData.email,
-        password: hashedPassword
+        password: hashedPassword // Not recommended
       });
+
       setIsSuccessModalOpen(true);
       
+      // Redirect after a brief delay
       setTimeout(() => {
         navigate('/login');
       }, 2000);
       
     } catch (e) {
-      console.error('Error adding document: ', e);
+      console.error('Error during registration: ', e);
+      alert('Registration failed. Please try again.');
     }
   };
-
   return (
     <section
     className="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center"

@@ -24,16 +24,24 @@ function Nav() {
   };
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if(user) {
-        setUser(user);
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser) {
+        // If user is signed in, we can get the user data and set it
+        const localStorageUser = JSON.parse(localStorage.getItem('user'));
+        setUser(localStorageUser || {
+          displayName: firebaseUser.displayName,
+          email: firebaseUser.email,
+          photoURL: firebaseUser.photoURL
+        });
       } else {
+        // If not signed in, check localStorage
         const localStorageUser = JSON.parse(localStorage.getItem('user'));
         setUser(localStorageUser);
       }
     });
     return () => unsubscribe();
   }, []);
+  
 
   const location = useLocation();
   return (
