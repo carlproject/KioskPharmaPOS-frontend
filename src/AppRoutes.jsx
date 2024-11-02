@@ -8,8 +8,8 @@ import Contact from './components/Contact';
 import ForgotPasswordComponent from './components/authComponents/ForgotPasswordComponent';
 import AdminSide from './pages/adminPage/AdminSide';
 import MainKiosk from './pages/kiosk/MainKiosk';
-import RealCart from './components/pos/RealCart';
 import Cart from './pages/kiosk/Cart';
+import Product from './pages/kiosk/Product';
 
 function AppRoutes() {
 
@@ -28,9 +28,9 @@ function AppRoutes() {
 
       <Route path='/user/kiosk' Component={MainKiosk}/>
       <Route path='/user/kiosk/cart/:userId' Component={Cart}/>
+      <Route path='/user/kiosk/View-Product/:userId' Component={Product}/>
 
       <Route path='/admin/' Component={AdminSide} />
-      <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   )

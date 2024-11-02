@@ -1,9 +1,9 @@
 import React from 'react'
-import RealCart from '../../components/pos/RealCart'
+import TryCart from '../../components/pos/TryCart'
 function Cart() {
   return (
     <>
-        <RealCart />
+    <TryCart />
     </>
   )
 }

@@ -45,18 +45,27 @@ const Kiosk = () => {
     setIsFullScreen(!isFullScreen);
   };
 
+  
+  const auth = getAuth();
+  const user = auth.currentUser;
+  const userId = user.uid;
+
  const viewCart = () => {
-    const auth = getAuth();
-    const user = auth.currentUser;
 
     if (!user) {
         alert("You need to be logged in to add items to your cart.");
         return;
     }
 
-    const userId = user.uid;
     navigate(`/user/kiosk/cart/${userId}`); 
  }
+
+ const handleProductClick = (userId) => {
+
+
+  navigate(`/user/kiosk/View-Product/${userId}`);
+};
+
 
 const addToCart = async (product) => {
     const auth = getAuth();
@@ -137,7 +146,7 @@ const addToCart = async (product) => {
         ) : (
           <div className={`grid ${isFullScreen ? "grid-cols-2 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"} gap-6 mt-4`}>
             {products.map((product) => (
-              <div key={product.id} className="border rounded-lg p-4 shadow-md bg-white hover:shadow-lg transition-shadow duration-300">
+              <div key={product.id} onClick={handleProductClick} className="border rounded-lg p-4 shadow-md bg-white hover:shadow-lg transition-shadow duration-300">
                 <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover mb-2 rounded" />
                 <h3 className="text-lg font-semibold">{product.name}</h3>
                 <p className="text-gray-600">Price: ${product.price}</p>

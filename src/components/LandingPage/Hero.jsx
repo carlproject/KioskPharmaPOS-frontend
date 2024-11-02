@@ -1,6 +1,21 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
 
 function Hero() {
+  const navigate = useNavigate();
+  const checkLogin = () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+        alert("You need to be logged in first before proceeding.");
+        return;
+    } else{
+      navigate('/user/kiosk');
+    }
+
+  }
   return (
     <div className="text-white w-full">
       <div className="bg-green-900 min-h-[40vh] flex items-center justify-center">
@@ -14,8 +29,8 @@ function Hero() {
               unparalleled convenience. Your path to well-being starts here,
               where every purchase is a prescription for savings.
             </p>
-            <a
-              href="#"
+            <button
+            onClick={checkLogin}
               className="inline-block bg-green-200 text-green-900 font-bold py-3 px-6 rounded-full hover:bg-green-300 transition-all duration-300"
             >
               Start Prescribing
@@ -33,7 +48,7 @@ function Hero() {
                   d="M3 3h18M9 9l-6 6m0 0l6 6m-6-6h18"
                 />
               </svg>
-            </a>
+            </button>
           </div>
 
           <div className="w-full md:w-[43%] mt- md:mt-0 md:ml-4">
