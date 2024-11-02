@@ -10,6 +10,7 @@ import AdminSide from './pages/adminPage/AdminSide';
 import MainKiosk from './pages/kiosk/MainKiosk';
 import Cart from './pages/kiosk/Cart';
 import Product from './pages/kiosk/Product';
+import OrderSummaryPage from './pages/kiosk/OrderSummaryPage';
 
 function AppRoutes() {
 
@@ -29,7 +30,7 @@ function AppRoutes() {
       <Route path='/user/kiosk' Component={MainKiosk}/>
       <Route path='/user/kiosk/cart/:userId' Component={Cart}/>
       <Route path='/user/kiosk/View-Product/:productId' Component={Product}/>
-
+      <Route path='/user/kiosk/order-summary' Component={OrderSummaryPage}/>
       <Route path='/admin/' Component={AdminSide} />
       </Routes>
     </Router>

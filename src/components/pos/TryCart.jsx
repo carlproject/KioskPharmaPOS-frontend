@@ -1,16 +1,23 @@
 import { React, useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { db } from '../../config/firebase';
+import { serverTimestamp, collection, doc, setDoc, writeBatch, updateDoc, getDocs, getDoc } from 'firebase/firestore';
+import { loadStripe} from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 function TryCart() {
-
-  const taxRate = 0.05// Example tax rate
-  const deliveryFee = 49; // Example delivery fee
-  const discountRate = 0.1; // Example discount for sales
+  const navigate = useNavigate();
+  const taxRate = 0.05
+  const deliveryFee = 49;
+  const discountRate = 0.1;
   const { userId } = useParams();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
   useEffect(() => {
     const fetchCartData = async () => {
       try {
@@ -31,7 +38,125 @@ function TryCart() {
     fetchCartData();
   }, [userId]);
 
+const handleCheckoutClick = () => setShowPaymentModal(true);
+const handleCloseModal = () => setShowPaymentModal(false);
 
+
+const handlePurchaseAndUpdateStock = async (userId) => {
+  const batch = writeBatch(db);
+  try {
+    // Log the user ID being processed
+    console.log('Handling purchase for userId:', userId);
+    
+    const userCartRef = doc(db, 'carts', userId);
+    
+    // Check if the user cart document exists
+    const userCartSnapshot = await getDoc(userCartRef);
+    if (!userCartSnapshot.exists()) {
+      console.warn(`No cart found for userId: ${userId}`);
+      return; // Exit if cart does not exist
+    }
+
+    // Get the items array from the cart document
+    const cartData = userCartSnapshot.data();
+    const cartItems = cartData.items || []; // Ensure we get items as an array
+    console.log('Cart items retrieved:', cartItems);
+    console.log(`Number of cart items: ${cartItems.length}`);
+
+    if (cartItems.length === 0) {
+      console.warn('No items found in the cart for this user.');
+      return; // Exit if no items in cart
+    }
+
+    for (let item of cartItems) {
+      const productRef = doc(db, 'products', item.productId);
+      const productSnapshot = await getDoc(productRef);
+
+      if (productSnapshot.exists()) {
+        const productData = productSnapshot.data();
+        const currentStockLevel = productData.stockLevel;
+        const newStockLevel = currentStockLevel - item.quantity;
+
+        console.log(`Current stock level for ${item.name}: ${currentStockLevel}`);
+        console.log(`Attempting to reduce stock by: ${item.quantity}`);
+        console.log(`New stock level will be: ${newStockLevel}`);
+
+        if (newStockLevel >= 0) {
+          batch.update(productRef, { stockLevel: newStockLevel });
+        } else {
+          console.warn(`Insufficient stock for item: ${item.name}`);
+        }
+      } else {
+        console.warn(`Product not found for productId: ${item.productId}`);
+      }
+    }
+
+    await batch.commit();
+    console.log('Batch commit successful: stock levels updated.');
+  } catch (error) {
+    console.error("Error updating stock levels:", error);
+  }
+};
+
+
+
+const onConfirmCheckout = async (paymentMethod) => {
+  setShowPaymentModal(false);
+
+  if (paymentMethod === 'Cash') {
+    const orderId = `order-${Date.now()}`;
+    const transactionData = {
+      userId,
+      orderId,
+      paymentMethod,
+      taxRate,
+      items: cartItems,
+      total: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
+      timestamp: serverTimestamp(),
+    };
+
+    try {
+      await setDoc(doc(collection(db, 'transactions'), orderId), transactionData);
+      console.log('Transaction saved successfully:', orderId);
+
+      await handlePurchaseAndUpdateStock(userId);
+
+      navigate('/user/kiosk/order-summary', { state: { orderId, transactionData } });
+    } catch (error) {
+      console.error('Failed to save transaction:', error);
+    }
+  } else if(paymentMethod === 'E-wallet') {
+    const orderId = `order-${Date.now()}`;
+  const amount = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  try {
+    const stripe = await stripePromise;
+
+    const response = await fetch("http://localhost:5000/user/create-payment-intent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        items: cartItems,
+      }),
+    });
+
+    const { id: sessionId } = await response.json();
+
+    const result = await stripe.redirectToCheckout({
+      sessionId,
+    });
+
+    if (result.error) {
+      console.error(result.error.message);
+    }
+  } catch (error) {
+    console.error('Failed to process payment:', error);
+  }
+
+  }
+};
 
   const increaseQuantity = (productId) => {
     setCartItems((prevItems) =>
@@ -43,7 +168,6 @@ function TryCart() {
     );
   };
 
-  // Handler to decrease quantity
   const decreaseQuantity = (productId) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
@@ -118,14 +242,13 @@ function TryCart() {
                         </button>
                     </div>
                     <div className="text-end md:order-4 md:w-32">
-                        <p className="text-base font-bold text-gray-900 dark:text-white">₱{originalPrice}</p>
+                        <p className="text-base font-bold text-gray-900 dark:text-white">₱{item.price}</p>
                     </div>
                 </div>
 
                 <div className="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
                     <a href="#" className="text-base font-medium text-gray-900 hover:underline dark:text-white">{item.name}</a>
 
-                    {/* Conditionally render the dosage if it exists */}
                     {item.dosage && (
                         <p className="text-sm text-gray-500">Dosage: {item.dosage}</p>
                     )}
@@ -226,8 +349,36 @@ function TryCart() {
           </dl>
         </div>
 
-          <button className="flex w-full items-center justify-center rounded-lg bg-green-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Proceed to Checkout</button>
+          <button onClick={handleCheckoutClick} className="flex w-full items-center justify-center rounded-lg bg-green-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Proceed to Checkout</button>
 
+
+              {showPaymentModal && (
+            <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
+              <div className="bg-white rounded-lg shadow-lg w-80 p-6 dark:bg-gray-800">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Choose Payment Method</h3>
+                <div className="mt-4 space-y-4">
+                  <button
+                    onClick={() => onConfirmCheckout('Cash')}
+                    className="w-full rounded-lg bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+                  >
+                    Cash
+                  </button>
+                  <button
+                    onClick={() => onConfirmCheckout('E-wallet')}
+                    className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                  >
+                    E-wallet
+                  </button>
+                </div>
+                <button
+                  onClick={handleCloseModal}
+                  className="mt-6 text-sm text-gray-500 underline hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
           <div className="flex items-center justify-center gap-2">
             <span className="text-sm font-normal text-gray-500 dark:text-gray-400"> or </span>
             <a href="#" title="" className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 underline hover:no-underline dark:text-primary-500">
