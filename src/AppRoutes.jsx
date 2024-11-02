@@ -28,7 +28,7 @@ function AppRoutes() {
 
       <Route path='/user/kiosk' Component={MainKiosk}/>
       <Route path='/user/kiosk/cart/:userId' Component={Cart}/>
-      <Route path='/user/kiosk/View-Product/:userId' Component={Product}/>
+      <Route path='/user/kiosk/View-Product/:productId' Component={Product}/>
 
       <Route path='/admin/' Component={AdminSide} />
       </Routes>
