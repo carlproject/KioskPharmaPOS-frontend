@@ -3,17 +3,19 @@ import { db } from '../../config/firebase';
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { debounce } from 'lodash';
 import { AiOutlineMedicineBox, AiOutlineHeart, AiOutlineSafety, AiOutlineUser, AiOutlineTool } from 'react-icons/ai';
+import { RiFirstAidKitFill } from 'react-icons/ri';
 import { getAuth } from "firebase/auth";
+import { MdMedicalInformation, MdOutlineMedication } from "react-icons/md";
 import axios from 'axios';
 import { Navigate, useNavigate } from "react-router-dom";
 
 const categories = [
   { name: "Prescription Medication", icon: <AiOutlineMedicineBox /> },
-  { name: "Over-the-Counter Medication", icon: <AiOutlineHeart /> },
+  { name: "Over-the-Counter Medication", icon: <MdOutlineMedication /> },
   { name: "Vitamins & Supplements", icon: <AiOutlineSafety /> },
-  { name: "First Aid", icon: <AiOutlineTool /> },
+  { name: "First Aid", icon: <RiFirstAidKitFill /> },
   { name: "Personal Care", icon: <AiOutlineUser /> },
-  { name: "Medical Equipment", icon: <AiOutlineTool /> },
+  { name: "Medical Equipment", icon: <MdMedicalInformation /> },
 ];
 
 const Kiosk = () => {

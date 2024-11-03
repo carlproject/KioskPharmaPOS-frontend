@@ -4,6 +4,7 @@ import axios from 'axios';
 import { db } from '../../config/firebase';
 import { serverTimestamp, collection, doc, setDoc, writeBatch, updateDoc, getDocs, getDoc } from 'firebase/firestore';
 import { loadStripe} from '@stripe/stripe-js';
+import { IoIosArrowRoundBack } from 'react-icons/io';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -11,12 +12,18 @@ function TryCart() {
   const navigate = useNavigate();
   const taxRate = 0.05
   const deliveryFee = 49;
-  const discountRate = 0.1;
+  const discountRate = 0.10;
   const { userId } = useParams();
   const [cartItems, setCartItems] = useState([]);
+  const [voucherCode, setVoucherCode] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [checkoutStatus, setCheckoutStatus] = useState(null); 
   const [error, setError] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isVoucherValid, setIsVoucherValid] = useState(false);
+  const [savings, setSavings] = useState(0.05);
+
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -45,27 +52,23 @@ const handleCloseModal = () => setShowPaymentModal(false);
 const handlePurchaseAndUpdateStock = async (userId) => {
   const batch = writeBatch(db);
   try {
-    // Log the user ID being processed
-    console.log('Handling purchase for userId:', userId);
     
     const userCartRef = doc(db, 'carts', userId);
     
-    // Check if the user cart document exists
     const userCartSnapshot = await getDoc(userCartRef);
     if (!userCartSnapshot.exists()) {
       console.warn(`No cart found for userId: ${userId}`);
-      return; // Exit if cart does not exist
+      return; 
     }
 
-    // Get the items array from the cart document
     const cartData = userCartSnapshot.data();
-    const cartItems = cartData.items || []; // Ensure we get items as an array
+    const cartItems = cartData.items || [];
     console.log('Cart items retrieved:', cartItems);
     console.log(`Number of cart items: ${cartItems.length}`);
 
     if (cartItems.length === 0) {
       console.warn('No items found in the cart for this user.');
-      return; // Exit if no items in cart
+      return;
     }
 
     for (let item of cartItems) {
@@ -101,6 +104,8 @@ const handlePurchaseAndUpdateStock = async (userId) => {
 
 
 const onConfirmCheckout = async (paymentMethod) => {
+  setIsLoading(true);
+  setCheckoutStatus(null)
   setShowPaymentModal(false);
 
   if (paymentMethod === 'Cash') {
@@ -110,6 +115,7 @@ const onConfirmCheckout = async (paymentMethod) => {
       orderId,
       paymentMethod,
       taxRate,
+      discountAmount,
       items: cartItems,
       total: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
       timestamp: serverTimestamp(),
@@ -120,10 +126,13 @@ const onConfirmCheckout = async (paymentMethod) => {
       console.log('Transaction saved successfully:', orderId);
 
       await handlePurchaseAndUpdateStock(userId);
-
+      setCheckoutStatus('success');
       navigate('/user/kiosk/order-summary', { state: { orderId, transactionData } });
     } catch (error) {
       console.error('Failed to save transaction:', error);
+      setCheckoutStatus('failed');
+    } finally{
+      setIsLoading(false);
     }
   } else if(paymentMethod === 'E-wallet') {
     const orderId = `order-${Date.now()}`;
@@ -200,18 +209,39 @@ const onConfirmCheckout = async (paymentMethod) => {
         console.error('Error:', error);
     }
   };
-
-
   const originalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const savings = originalPrice * discountRate;
-  const tax = originalPrice * taxRate;
-  const total = originalPrice - savings + tax + deliveryFee;
+
+  const discountAmount = isVoucherValid ? originalPrice * discountRate : originalPrice * 0.05;
+  const priceAfterDiscount = originalPrice - discountAmount;
+  
+  const tax = priceAfterDiscount * taxRate;
+  const total = priceAfterDiscount + tax ;
+  
+  // Voucher handling
+  const handleVoucherSubmit = (e) => {
+    e.preventDefault();
+    if (voucherCode === 'CUTEKO') {
+      alert('Congratulations! You just got a 10% discount voucher');
+      setIsVoucherValid(true); 
+      setSavings(discountRate);
+    } else {
+      alert('Invalid voucher code');
+      setIsVoucherValid(false);
+      setSavings(0);    
+      setVoucherCode('');  
+    }
+  };
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
   return (
     <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
+      <button onClick={() => window.location.href = "../../../user/kiosk"} className="absolute flex items-center top-4 left-4 text-green-600 font-semibold border-2 p-1 rounded-md border-green-500 opacity-85 hover:bg-green-500 hover:text-white">
+                <IoIosArrowRoundBack size={25}/>
+                Back to Kiosk
+            </button>
   <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
     <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Shopping Cart</h2>
 
@@ -242,7 +272,7 @@ const onConfirmCheckout = async (paymentMethod) => {
                         </button>
                     </div>
                     <div className="text-end md:order-4 md:w-32">
-                        <p className="text-base font-bold text-gray-900 dark:text-white">₱{item.price}</p>
+                        <p className="text-base font-bold text-gray-900 dark:text-white">₱{item.price * item.quantity}</p>
                     </div>
                 </div>
 
@@ -328,13 +358,8 @@ const onConfirmCheckout = async (paymentMethod) => {
             </dl>
 
             <dl className="flex items-center justify-between gap-4">
-              <dt className="text-base font-normal text-gray-500 dark:text-gray-400">Savings</dt>
-              <dd className="text-base font-medium text-green-600">₱{savings.toFixed(2)}</dd>
-            </dl>
-
-            <dl className="flex items-center justify-between gap-4">
-              <dt className="text-base font-normal text-gray-500 dark:text-gray-400">Delivery</dt>
-              <dd className="text-base font-medium text-gray-900 dark:text-white">₱{deliveryFee.toFixed(2)}</dd>
+              <dt className="text-base font-normal text-gray-500 dark:text-gray-400">Discount</dt>
+              <dd className="text-base font-medium text-red-600">₱{discountAmount.toFixed(2)}</dd>
             </dl>
 
             <dl className="flex items-center justify-between gap-4">
@@ -381,7 +406,7 @@ const onConfirmCheckout = async (paymentMethod) => {
           )}
           <div className="flex items-center justify-center gap-2">
             <span className="text-sm font-normal text-gray-500 dark:text-gray-400"> or </span>
-            <a href="#" title="" className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 underline hover:no-underline dark:text-primary-500">
+            <a href="/user/kiosk" title="" className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 underline hover:no-underline dark:text-primary-500">
               Continue Shopping
               <svg className="h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4" />
@@ -391,17 +416,49 @@ const onConfirmCheckout = async (paymentMethod) => {
         </div>
 
         <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-          <form className="space-y-4">
-            <div>
-              <label for="voucher" className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"> Do you have a voucher or gift card? </label>
-              <input type="text" id="voucher" className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500" placeholder="" required />
-            </div>
-            <button type="submit" className="flex w-full items-center justify-center rounded-lg bg-green-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Apply Code</button>
-          </form>
+        <form className="space-y-4" onSubmit={handleVoucherSubmit}>
+          <div>
+            <label htmlFor="voucher" className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Do you have a voucher or gift card?</label>
+            <input
+              type="text"
+              id="voucher"
+              value={voucherCode}
+              onChange={(e) => setVoucherCode(e.target.value)}
+              className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+              placeholder=""
+              required
+            />
+          </div>
+          <button type="submit" className="flex w-full items-center justify-center rounded-lg bg-green-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Apply Code</button>
+        </form>
         </div>
       </div>
     </div>
   </div>
+
+
+  <div className="relative">
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-green-600 bg-opacity-70 z-50 border-4 border-black">
+          <div className="flex flex-col items-center text-white">
+            <div className="w-12 h-12 border-4 border-t-white border-b-white rounded-full animate-spin mb-4"></div>
+            <p className="text-lg font-semibold">Processing your transaction...</p>
+          </div>
+        </div>
+      )}
+
+      {checkoutStatus === 'success' && (
+        <div className="fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-600 text-white p-4 rounded-lg shadow-lg border-2 border-black">
+          <p className="text-lg font-semibold">Transaction successful! Redirecting...</p>
+        </div>
+      )}
+
+      {checkoutStatus === 'failed' && (
+        <div className="fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white p-4 rounded-lg shadow-lg border-2 border-black">
+          <p className="text-lg font-semibold">Transaction failed. Please try again.</p>
+        </div>
+      )}
+    </div>
 </section>
   )
 }
