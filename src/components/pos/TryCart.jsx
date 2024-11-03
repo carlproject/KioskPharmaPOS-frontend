@@ -119,6 +119,7 @@ const onConfirmCheckout = async (paymentMethod) => {
       items: cartItems,
       total: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
       timestamp: serverTimestamp(),
+      checkoutStatus: 'processing',
     };
 
     try {
@@ -217,7 +218,6 @@ const onConfirmCheckout = async (paymentMethod) => {
   const tax = priceAfterDiscount * taxRate;
   const total = priceAfterDiscount + tax ;
   
-  // Voucher handling
   const handleVoucherSubmit = (e) => {
     e.preventDefault();
     if (voucherCode === 'CUTEKO') {
@@ -319,9 +319,9 @@ const onConfirmCheckout = async (paymentMethod) => {
               </div>
               <div>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
-                  <span className="line-through"> $1799,99 </span>
+                  <span className="line-through"> ₱1799,99 </span>
                 </p>
-                <p className="text-lg font-bold leading-tight text-red-600 dark:text-red-500">$1199</p>
+                <p className="text-lg font-bold leading-tight text-red-600 dark:text-red-500">₱1199</p>
               </div>
               <div className="mt-6 flex items-center gap-2.5">
                 <button data-tooltip-target="favourites-tooltip-3" type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white p-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">

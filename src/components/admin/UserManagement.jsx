@@ -57,7 +57,6 @@ function UserManagement() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Pagination calculations
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
@@ -118,7 +117,7 @@ function UserManagement() {
                   <tr key={user.id} className="hover:bg-green-100 transition-colors">
                     <td className="px-4 py-3">
                       <img
-                        src={user.photoURL || "https://via.placeholder.com/96"}
+                        src={user.photoURL || "https://i.pinimg.com/1200x/8f/d4/5a/8fd45af5a41fbde94c10b591281a4c50.jpg"}
                         alt={user.displayName || `${user.FirstName} ${user.LastName}`}
                         className="w-16 h-16 rounded-full border-2 border-green-500"
                       />

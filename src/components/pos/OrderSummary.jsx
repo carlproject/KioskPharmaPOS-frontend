@@ -13,7 +13,6 @@ function OrderSummary() {
     if (!transactionData) {
         return <p>Loading...</p>;
     }
-
     const handleDownloadInvoice = () => {
         const doc = new jsPDF();
     
@@ -90,7 +89,6 @@ function OrderSummary() {
     
         doc.save(`Checacio_Invoice_${orderId}.pdf`);
     };
-    
 
     return (
         <section className="py-24 relative">
@@ -110,7 +108,7 @@ function OrderSummary() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 py-6 border-y border-gray-100 mb-6">
                     <div className="box group">
                         <p className="font-normal text-base leading-7 text-gray-500 mb-3 transition-all duration-500 group-hover:text-gray-700">Delivery Date</p>
-                        <h6 className="font-semibold font-manrope text-2xl leading-9 text-black">Dec 01, 2023</h6>
+                        <h6 className="font-semibold font-manrope text-2xl leading-9 text-black"></h6>
                     </div>
                     <div className="box group">
                         <p className="font-normal text-base leading-7 text-gray-500 mb-3 transition-all duration-500 group-hover:text-gray-700">Order</p>
@@ -147,11 +145,11 @@ function OrderSummary() {
                     <div className="w-full">
                         <div className="flex items-center justify-between mb-6">
                             <p className="font-normal text-xl leading-8 text-gray-500">Subtotal</p>
-                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{transactionData.total - (transactionData.savings - transactionData.taxRate )}</p>
+                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{transactionData.total - (transactionData.discountAmount - transactionData.taxRate )}</p>
                         </div>
                         <div className="flex items-center justify-between mb-6">
                             <p className="font-normal text-xl leading-8 text-gray-500">Savings</p>
-                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{transactionData.savings}</p>
+                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{transactionData.discountAmount}</p>
                         </div>
                         <div className="flex items-center justify-between mb-6">
                             <p className="font-normal text-xl leading-8 text-gray-500">Taxes</p>
