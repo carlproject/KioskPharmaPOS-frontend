@@ -42,20 +42,31 @@ function TryCart() {
       }
     };
 
+
     fetchCartData();
-  }, [userId]);
+
+    if (checkoutStatus) {
+  
+      const timer = setTimeout(() => {
+        console.log("Clearing toast..."); 
+        setCheckoutStatus(null);
+      }, 2000);
+  
+      return () => clearTimeout(timer);
+    }
+  }, [userId, checkoutStatus]);
 
 const handleCheckoutClick = () => setShowPaymentModal(true);
 const handleCloseModal = () => setShowPaymentModal(false);
 
 
+
 const handlePurchaseAndUpdateStock = async (userId) => {
   const batch = writeBatch(db);
   try {
-    
     const userCartRef = doc(db, 'carts', userId);
-    
     const userCartSnapshot = await getDoc(userCartRef);
+
     if (!userCartSnapshot.exists()) {
       console.warn(`No cart found for userId: ${userId}`);
       return; 
@@ -64,7 +75,6 @@ const handlePurchaseAndUpdateStock = async (userId) => {
     const cartData = userCartSnapshot.data();
     const cartItems = cartData.items || [];
     console.log('Cart items retrieved:', cartItems);
-    console.log(`Number of cart items: ${cartItems.length}`);
 
     if (cartItems.length === 0) {
       console.warn('No items found in the cart for this user.');
@@ -78,8 +88,9 @@ const handlePurchaseAndUpdateStock = async (userId) => {
       if (productSnapshot.exists()) {
         const productData = productSnapshot.data();
         const currentStockLevel = productData.stockLevel;
+        
+        // Dynamically calculate the new stock level based on the cart item quantity
         const newStockLevel = currentStockLevel - item.quantity;
-
         console.log(`Current stock level for ${item.name}: ${currentStockLevel}`);
         console.log(`Attempting to reduce stock by: ${item.quantity}`);
         console.log(`New stock level will be: ${newStockLevel}`);
@@ -100,7 +111,6 @@ const handlePurchaseAndUpdateStock = async (userId) => {
     console.error("Error updating stock levels:", error);
   }
 };
-
 
 
 const onConfirmCheckout = async (paymentMethod) => {
@@ -135,58 +145,112 @@ const onConfirmCheckout = async (paymentMethod) => {
     } finally{
       setIsLoading(false);
     }
-  } else if(paymentMethod === 'E-wallet') {
-    const orderId = `order-${Date.now()}`;
-  const amount = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  } else if (paymentMethod === 'E-wallet') {
+    try {
+      const orderId = `order-${Date.now()}`;
+      
+      const stripe = await stripePromise;
+      const response = await fetch("http://localhost:5000/user/create-payment-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          orderId,
+          paymentMethod,
+          taxRate,
+          discountAmount,
+          items: cartItems.map((item) => ({
+            productId: item.productId,
+            name: item.name,
+            description: item.dosage || "No description available",
+            imageUrl: item.imageUrl,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        }),
+      });
 
-  try {
-    const stripe = await stripePromise;
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to process payment:", errorData.error);
+        setCheckoutStatus(errorData.error);
+        return;
+      }
 
-    const response = await fetch("http://localhost:5000/user/create-payment-intent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        items: cartItems,
-      }),
-    });
+      const { sessionId } = await response.json();
+      const result = await stripe.redirectToCheckout({ sessionId });
 
-    const { id: sessionId } = await response.json();
-
-    const result = await stripe.redirectToCheckout({
-      sessionId,
-    });
-
-    if (result.error) {
-      console.error(result.error.message);
+      if (result.error) {
+        console.error(result.error.message);
+      }
+    } catch (error) {
+      console.error("Failed to process payment:", error);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error('Failed to process payment:', error);
-  }
-
   }
 };
 
-  const increaseQuantity = (productId) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.productId === productId
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
-    );
-  };
+const increaseQuantity = async (productId) => {
+  try {
+    const productRef = doc(db, "products", productId);
+    const productSnapshot = await getDoc(productRef);
 
-  const decreaseQuantity = (productId) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.productId === productId && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
-  };
+    if (productSnapshot.exists()) {
+      const productData = productSnapshot.data();
+      const currentStockLevel = productData.stockLevel;
+
+      if (currentStockLevel > 0) {
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item.productId === productId
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        );
+
+        await updateDoc(productRef, { stockLevel: currentStockLevel - 1 });
+        console.log(`Stock level for ${productId} reduced by 1`);
+      } else {
+        alert("Stock level is insufficient to increase quantity");
+      }
+    } else {
+      console.warn("Product not found in Firestore");
+    }
+  } catch (error) {
+    console.error("Error updating stock level:", error);
+  }
+};
+
+const decreaseQuantity = async (productId) => {
+  try {
+    const productRef = doc(db, "products", productId);
+    const productSnapshot = await getDoc(productRef);
+
+    if (productSnapshot.exists()) {
+      const productData = productSnapshot.data();
+      const currentStockLevel = productData.stockLevel;
+
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.productId === productId && item.quantity > 1
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+      );
+
+      const updatedStockLevel = currentStockLevel + 1;
+      await updateDoc(productRef, { stockLevel: updatedStockLevel });
+      console.log(`Stock level for ${productId} increased by 1`);
+    } else {
+      console.warn("Product not found in Firestore");
+    }
+  } catch (error) {
+    console.error("Error updating stock level:", error);
+  }
+};
+
+
   
   const removeToCart = async (productId) => {
     try {
@@ -459,8 +523,16 @@ const onConfirmCheckout = async (paymentMethod) => {
         </div>
       )}
     </div>
+      {checkoutStatus && (
+        <div
+          className="fixed top-4 left-[600px] transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg max-w-xs text-center animate-slide-in-out"
+           > 
+           <p>{checkoutStatus}</p>
+         </div>
+          )}
 </section>
   )
 }
+
 
 export default TryCart

@@ -39,7 +39,7 @@ function AdminSide() {
 
   return (
     <>
-    <AdminPanel setActiveComponent={setActiveComponent}/>
+    <AdminPanel setActiveComponent={setActiveComponent} activeComponent={activeComponent}/>
     <div className="flex-1 p-2">
         {renderComponent()}
       </div>
