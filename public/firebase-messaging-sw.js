@@ -10,6 +10,7 @@ firebase.initializeApp({
     storageBucket: import.meta.env.VITE_APP_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: import.meta.env.VITE_APP_FIREBASE_MESSAGING_SENDER_ID,
     appId: import.meta.env.VITE_APP_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_APP_FIREBASE_MEASUREMENT_ID
 });
 
 const messaging = firebase.messaging();
@@ -19,7 +20,7 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: phamalogo
+     icon: 'https://via.placeholder.com/128x128.png?text=Logo'
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);

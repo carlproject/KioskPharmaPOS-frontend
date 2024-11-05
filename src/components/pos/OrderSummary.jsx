@@ -44,8 +44,8 @@ function OrderSummary() {
             item.name,
             item.dosage || "N/A",
             item.quantity,
-            `$${item.price.toFixed(2)}`,
-            `$${(item.price * item.quantity).toFixed(2)}`
+            `₱${item.price.toFixed(2)}`,
+            `₱${(item.price * item.quantity).toFixed(2)}`
         ]));
     
         doc.autoTable({
@@ -67,20 +67,24 @@ function OrderSummary() {
     
         doc.setTextColor(secondaryColor);
         doc.setFontSize(12);
-        const subtotal = transactionData.total.toFixed(2) - 100;
-        const deliveryCharge = 50.00;
-        const tax = 50.00;
-        const totalAmount = parseFloat(transactionData.total).toFixed(2);
+        
+        const subtotal = transactionData.items.reduce((acc, item) => {
+            return acc + (item.price * item.quantity);
+        }, 0);
+        
+        const totalDiscount = transactionData.discountAmount || 0;
+        const totalTax = transactionData.taxRate || 0;
     
-        doc.text(`Subtotal: ₱${(transactionData.total - (transactionData.savings - transactionData.taxRate)).toFixed(2)}`, 10, finalY);
-        doc.text(`Delivery Charge: ₱${deliveryCharge.toFixed(2)}`, 10, finalY + 10);
-        doc.text(`Taxes: ₱${transactionData.taxRate.toFixed(2)}`, 10, finalY + 20);
-
+        const totalAmount = subtotal - totalDiscount + totalTax;
+    
+        doc.text(`Subtotal: ₱${totalAmount.toFixed(2)}`, 10, finalY);
+        doc.text(`Discount: ₱${totalDiscount.toFixed(2)}`, 10, finalY + 10);
+        doc.text(`Taxes: ₱${totalTax.toFixed(2)}`, 10, finalY + 20);
+    
         doc.setTextColor(primaryColor);
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text(`Total: ₱${totalAmount}`, 10, finalY + 35);
-
+        doc.text(`Total: ₱${subtotal.toFixed(2)}`, 10, finalY + 35);
     
         doc.setTextColor(secondaryColor);
         doc.setFontSize(10);
@@ -89,6 +93,7 @@ function OrderSummary() {
     
         doc.save(`Checacio_Invoice_${orderId}.pdf`);
     };
+    
 
     return (
         <section className="py-24 relative">

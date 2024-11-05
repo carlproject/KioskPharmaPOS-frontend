@@ -95,7 +95,7 @@ const addToCart = async (product) => {
         });
 
         if (response.data.success) {
-            alert(response.data.message); // Show success message
+            alert(response.data.message);
         } else {
             console.error("Error adding to cart:", response.data.message);
             alert(response.data.message);
@@ -153,9 +153,6 @@ const addToCart = async (product) => {
                 <p className="text-sm">
                   {product.prescriptionNeeded ? "Prescription Required" : "No Prescription Needed"}
                 </p>
-                <button onClick={() => addToCart(product)} className="mt-4 bg-green-500 text-white py-1 px-4 rounded hover:bg-green-700 transition-colors">
-                  Add to Cart
-                </button>
               </div>
             ))}
           </div>

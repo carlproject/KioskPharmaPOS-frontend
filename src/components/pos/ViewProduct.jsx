@@ -1,25 +1,33 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa'; 
+import { FaArrowLeft } from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function ViewProduct({ product }) {
     const navigate = useNavigate();
-    const [selectedDosage, setSelectedDosage] = useState(''); // Change to singular since it's one selected dosage
+    const [selectedDosage, setSelectedDosage] = useState('');
+    const [stockLevel, setStockLevel] = useState(product.stockLevel); // Track stock level
 
     const handleDosageChange = (dosage) => {
-        setSelectedDosage(dosage); // Set the selected dosage
+        setSelectedDosage(dosage);
     };
 
     const SubmitToCart = async () => {
+        if (!selectedDosage) {
+            toast.warning("Please select a dosage before adding to cart");
+            return;
+        }
+
         try {
             const auth = getAuth();
             const user = auth.currentUser;
 
             const cartItem = {
                 productId: product.id,
-                userId: user.uid, 
+                userId: user.uid,
                 imageUrl: product.imageUrl,
                 name: product.name,
                 price: product.price,
@@ -28,42 +36,44 @@ function ViewProduct({ product }) {
             };
 
             const response = await axios.post('http://localhost:5000/user/kiosk/view-product/add', cartItem);
-            alert(response.data);
+            toast.success(response.data);
+
+            // Decrement local stock level to simulate the item being added to the cart
+            setStockLevel((prevStock) => prevStock - 1);
         } catch (error) {
-            console.error('Error adding item to cart:', error);
-            alert('Failed to add item to cart');
+            const errorMessage = error.response?.data || 'Failed to add item to cart';
+            toast.error(errorMessage);
         }
     };
 
     return (
         <section className="relative">
+            {/* Toast Container for displaying toasts */}
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover draggable />
+
             <div className="w-full mx-auto px-4 sm:px-6 lg:px-0">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mx-auto max-md:px-2">
-                    <div className="img">
-                        <div className="img-box h-full mr-6 max-lg:mx-auto">
-                            <img
-                                src={product.imageUrl}
-                                alt={product.name}
-                                className="max-lg:mx-auto lg:ml-auto h-full object-cover"
-                            />
-                        </div>
+                    {/* Product Image */}
+                    <div className="img-box h-full mr-6 max-lg:mx-auto">
+                        <img src={product.imageUrl} alt={product.name} className="max-lg:mx-auto lg:ml-auto h-full object-cover" />
                     </div>
-                    
+
+                    {/* Product Details */}
                     <div className="data w-full lg:pr-8 pr-0 xl:justify-start justify-center flex items-center max-lg:pb-10 xl:my-2 lg:my-5 my-0">
                         <div className="data w-full max-w-xl">
-                        <button 
-                            onClick={() => navigate(-1)}
-                            className="flex items-center text-gray-900 bg-gray-200 p-2 rounded hover:bg-gray-300 transition duration-200"
-                        >
-                            <FaArrowLeft className="mr-2 text-green-600" />
-                            Go Back
-                        </button>
-                            <p className="text-lg font-medium leading-8 text-indigo-600 mb-4">
-                                {product.category}
-                            </p>
-                            <h2 className="font-manrope font-bold text-3xl leading-10 text-gray-900 mb-2 capitalize">
-                                {product.name} 
-                            </h2>
+                            <button 
+                                onClick={() => navigate(-1)}
+                                className="flex items-center text-gray-900 bg-gray-200 p-2 rounded hover:bg-gray-300 transition duration-200"
+                            >
+                                <FaArrowLeft className="mr-2 text-green-600" />
+                                Go Back
+                            </button>
+
+                            {/* Product Information */}
+                            <p className="text-lg font-medium leading-8 text-indigo-600 mb-4">{product.category}</p>
+                            <h2 className="font-manrope font-bold text-3xl leading-10 text-gray-900 mb-2 capitalize">{product.name}</h2>
+
+                            {/* Price and Stock */}
                             <div className="flex flex-col sm:flex-row sm:items-center mb-6">
                                 <h6 className="font-manrope font-semibold text-2xl leading-9 text-gray-900 pr-5 sm:border-r border-gray-200 mr-5">
                                     ₱{product.price}
@@ -71,10 +81,15 @@ function ViewProduct({ product }) {
                                 <div className="flex items-center gap-2">
                                     <span className="pl-2 font-normal leading-7 text-gray-500 text-sm">1624 reviews</span>
                                 </div>
+                                {/* Stock Level */}
+                                <span className={`ml-4 text-sm font-semibold ${stockLevel > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {stockLevel > 0 ? `In Stock: ${stockLevel}` : 'Out of Stock'}
+                                </span>
                             </div>
-                            <p className="text-gray-500 text-base font-normal mb-5">
-                                {product.description} 
-                            </p>
+
+                            <p className="text-gray-500 text-base font-normal mb-5">{product.description}</p>
+
+                            {/* Dosage Selection */}
                             <p className="text-gray-900 text-lg leading-8 font-medium mb-4">Dosages</p>
                             <div className="w-full pb-8 border-b border-gray-100">
                                 <div className="grid gap-3">
@@ -86,7 +101,7 @@ function ViewProduct({ product }) {
                                                 value={dosage}
                                                 checked={selectedDosage === dosage}
                                                 onChange={() => handleDosageChange(dosage)}
-                                                className="hidden peer" 
+                                                className="hidden peer"
                                             />
                                             <span className="flex items-center justify-center w-full py-2 border border-gray-300 rounded-lg bg-white peer-checked:bg-indigo-600 peer-checked:text-white transition-all duration-300">
                                                 {dosage}
@@ -96,23 +111,16 @@ function ViewProduct({ product }) {
                                 </div>
                             </div>
 
-                            <p className="text-gray-900 text-lg leading-8 font-medium mb-4">Purposes</p>
-                            <div className="w-full pb-8 border-b border-gray-100 flex-wrap">
-                                <div className="grid grid-cols-3 min-[400px]:grid-cols-5 gap-3 max-w-md">
-                                    {product.purposes.map((purpose, index) => (
-                                        <label key={index} className="flex items-center">
-                                            {purpose} 
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
+                            {/* Add to Cart Button */}
                             <div className="flex gap-3 justify-between flex-col sm:flex-row mt-10">
                                 <button
                                     onClick={SubmitToCart}
-                                    className="w-full flex items-center justify-center bg-gray-900 text-white font-semibold text-base leading-6 h-12 rounded-full transition-all duration-300 hover:bg-gray-800"
-                                    disabled={!selectedDosage} 
+                                    className={`w-full flex items-center justify-center ${
+                                        stockLevel > 0 ? 'bg-gray-900 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    } font-semibold text-base leading-6 h-12 rounded-full transition-all duration-300 hover:bg-gray-800`}
+                                    disabled={!selectedDosage || stockLevel <= 0}
                                 >
-                                    Add to Cart
+                                    {stockLevel > 0 ? 'Add to Cart' : 'Out of Stock'}
                                 </button>
                             </div>
                         </div>

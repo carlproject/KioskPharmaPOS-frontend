@@ -251,29 +251,37 @@ const decreaseQuantity = async (productId) => {
 };
 
 
-  
-  const removeToCart = async (productId) => {
-    try {
-      alert(productId + ' and ' + userId)
-        const response = await fetch('http://localhost:5000/user/kiosk/cart/remove', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userId, productId }),
-        });
+const removeToCart = async (productId) => {
+  try {
+      if (!userId) {
+          console.error("User ID is undefined");
+          return;
+      }
+      
+      const response = await fetch('http://localhost:5000/user/kiosk/cart/remove', {
+          method: 'DELETE',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId, productId }), 
+      });
 
-        if (response.ok) {
-            const updatedCart = cartItems.filter(item => item.productId !== productId);
-            setCartItems(updatedCart);
-            console.log("Removed item with ID:", productId);
-        } else {
-            console.error('Failed to remove item from cart');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-  };
+      if (response.ok) {
+          const updatedCart = cartItems.filter(item => item.productId !== productId);
+          setCartItems(updatedCart);
+          console.log("Removed item with ID:", productId);
+      } else {
+          console.error('Failed to remove item from cart');
+      }
+  } catch (error) {
+      console.error('Error:', error);
+  }
+};
+
+
+  
+
+
   const originalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const discountAmount = isVoucherValid ? originalPrice * discountRate : originalPrice * 0.05;

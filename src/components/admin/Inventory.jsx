@@ -1,23 +1,61 @@
 import React, { useEffect, useState } from 'react';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { db  } from '../../config/firebase';
+import { getFirestore, collection, getDocs, doc, updateDoc, onSnapshot, getDoc } from 'firebase/firestore'; // make sure getDoc is imported
+import { db } from '../../config/firebase';
 import { AiOutlineWarning, AiOutlineCheckCircle, AiOutlineReload } from 'react-icons/ai';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Inventory() {
   const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [newStockLevel, setNewStockLevel] = useState("");
 
   useEffect(() => {
     const fetchInventory = async () => {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      const productsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setProducts(productsData);
+      const productsRef = collection(db, "products");
+      const unsubscribe = onSnapshot(productsRef, (querySnapshot) => {
+        const productsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setProducts(productsData);
+      });
+
+      return () => unsubscribe();
     };
 
     fetchInventory();
   }, [db]);
+
+  const handleRestock = async () => {
+    if (selectedProduct && newStockLevel) {
+      const productRef = doc(db, "products", selectedProduct);
+      
+      // Use getDoc to retrieve a single product's data
+      const productSnapshot = await getDoc(productRef); 
+      if (productSnapshot.exists()) {
+        const currentStockLevel = productSnapshot.data().stockLevel;
+        const updatedStockLevel = currentStockLevel + Number(newStockLevel);
+
+        // Update the stock level in Firestore
+        await updateDoc(productRef, { stockLevel: updatedStockLevel });
+        toast.success("Stock level updated successfully!");
+
+        // Reset states and close modal
+        setSelectedProduct(null); // Close the modal
+        setNewStockLevel(""); 
+      } else {
+        toast.error("Product not found.");
+      }
+    } else {
+      toast.error("Please enter a valid stock level.");
+    }
+  };
+
+  const openModal = (productId) => {
+    setSelectedProduct(productId);
+    setNewStockLevel(""); // Reset new stock level for the new entry
+  };
 
   return (
     <div className="p-4 sm:ml-64">
@@ -47,12 +85,51 @@ function Inventory() {
                   Stock Level: {product.stockLevel} {product.stockLevel < 10 ? ' - Low Stock!' : ''}
                 </p>
 
+                <button 
+                  onClick={() => openModal(product.id)} 
+                  className="mt-2 w-full py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition duration-200"
+                >
+                  Restock
+                </button>
+
                 {product.purposes && (
                   <p className="text-sm text-gray-500 dark:text-gray-400">Purposes: {product.purposes.join(', ')}</p>
                 )}
               </div>
             ))}
           </div>
+
+          {/* Modal for Restocking */}
+          {selectedProduct && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-lg font-semibold mb-4">Restock Product</h2>
+                <input
+                  type="number"
+                  value={newStockLevel}
+                  onChange={(e) => setNewStockLevel(e.target.value)}
+                  placeholder="Enter stock to add"
+                  className="border p-2 rounded w-full mb-4"
+                />
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setSelectedProduct(null)} // Close modal
+                    className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleRestock}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                  >
+                    Update Stock
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <ToastContainer />
         </section>
       </div>
     </div>

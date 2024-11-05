@@ -76,13 +76,10 @@ const PaymentSuccess= () => {
 
         const transactionData = orderSnap.data();
 
-        // Update stock levels
         await handlePurchaseAndUpdateStock(transactionData.userId);
 
-        // Update checkout status to 'success'
-        await updateDoc(orderRef, { checkoutStatus: "success" });
+        await updateDoc(orderRef, { checkoutStatus: "processing" });
 
-        // Navigate to order summary page
         navigate("/user/kiosk/order-summary", { state: { orderId, transactionData } });
       } catch (error) {
         console.error("Error processing order:", error);
