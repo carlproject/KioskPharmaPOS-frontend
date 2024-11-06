@@ -6,7 +6,7 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
   const navigate = useNavigate();
   const logoutAdmin = () => {
     sessionStorage.removeItem('isAdminAuthenticated')
-
+    localStorage.removeItem('adminCredentials');
     navigate('/login');
   }
   const adminEmail = sessionStorage.getItem('adminCredentials');

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import Kiosk from '../../components/pos/Kiosk'
-import { messaging, app } from '../../config/firebase';
+import React, { useState, useEffect } from 'react';
+import Kiosk from '../../components/pos/Kiosk';
+import { messaging, auth } from '../../config/firebase';
 import { getToken } from 'firebase/messaging';
 
 function MainKiosk() {
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
 
   useEffect(() => {
     requestNotificationPermission();
@@ -12,14 +13,14 @@ function MainKiosk() {
 
   const requestNotificationPermission = async () => {
     try {
-      const permission = await Notification.requestPermission();
       
+      const permission = await Notification.requestPermission();
+
       if (permission === 'granted') {
-        const token = await messaging.getToken({
+        const token = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
         });
-        const userId = app.auth().currentUser?.uid; 
-        
+        const userId = user.uid;
         if (userId) {
           await sendFCMTokenToBackend(userId, token);
           setIsPermissionGranted(true);
@@ -46,13 +47,12 @@ function MainKiosk() {
     }
   };
 
-
   return (
     <>
         <Kiosk />
         <p>{isPermissionGranted ? 'Notifications Enabled!' : 'Requesting Notification Permission...'}</p>
     </>
-  )
+  );
 }
 
-export default MainKiosk
+export default MainKiosk;

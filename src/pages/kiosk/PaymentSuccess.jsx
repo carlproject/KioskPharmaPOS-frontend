@@ -58,6 +58,76 @@ const PaymentSuccess= () => {
     }
   };
 
+  const getAdminFCMTokens = async () => {
+    try {
+      const adminRef = doc(db, "admin", "checachio@gmail.com"); 
+  
+      const adminDoc = await getDoc(adminRef);
+  
+      if (adminDoc.exists()) {
+        const data = adminDoc.data();
+        const fcmTokens = data.fcmTokens || [];
+  
+        if (fcmTokens.length > 0) {
+          return fcmTokens[0];
+        } else {
+          console.warn("No FCM tokens found for the admin.");
+          return null;
+        }
+      } else {
+        console.error("Admin document does not exist.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error retrieving admin FCM token:", error);
+      return null;
+    }
+  };
+  
+  
+  const sendAdminNotification = async () => {
+    try {
+      const adminFCMToken = await getAdminFCMTokens();
+  
+      if (adminFCMToken) {
+        await fetch("http://localhost:5000/admin/send-notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "New Order",
+            body: "A new order has been placed.",
+            recipientToken: adminFCMToken,
+          }),
+        });
+      } else {
+        console.log("No FCM token found for the admin");
+      }
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  };
+
+  
+const getUserFCMToken = async (userId) => {
+  try {
+    const userRef = doc(db, "users", userId);
+
+    const userDoc = await getDoc(userRef);
+
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      const fcmToken = userData.fcmTokens || null;
+      return fcmToken;
+    } else {
+      console.log(`User document with ID ${userId} does not exist`);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error retrieving FCM token:', error);
+    return null;
+  }
+};
+
   useEffect(() => {
     const processOrder = async () => {
       if (!orderId) {
@@ -75,8 +145,22 @@ const PaymentSuccess= () => {
         }
 
         const transactionData = orderSnap.data();
+        const userId = transactionData.userId;
 
         await handlePurchaseAndUpdateStock(transactionData.userId);
+
+        const recipientToken = await getUserFCMToken(userId);
+          await fetch("http://localhost:5000/user/send-notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "Transaction Confirmed",
+            body: "Your order has been successfully confirmed.",
+            recipientToken: recipientToken,
+          }),
+        });
+
+        await sendAdminNotification();
 
         await updateDoc(orderRef, { checkoutStatus: "processing" });
 
