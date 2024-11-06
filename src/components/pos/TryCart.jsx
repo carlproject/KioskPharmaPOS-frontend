@@ -137,6 +137,17 @@ const onConfirmCheckout = async (paymentMethod) => {
       console.log('Transaction saved successfully:', orderId);
 
       await handlePurchaseAndUpdateStock(userId);
+
+      await fetch("http://localhost:5000/user/send-notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: "Transaction Confirmed",
+          body: "Your order has been successfully confirmed.",
+          recipientToken: recipientToken,
+        }),
+      });
+
       setCheckoutStatus('success');
       navigate('/user/kiosk/order-summary', { state: { orderId, transactionData } });
     } catch (error) {
@@ -182,6 +193,19 @@ const onConfirmCheckout = async (paymentMethod) => {
 
       if (result.error) {
         console.error(result.error.message);
+      } else {
+        const recipientToken = await getUserFCMToken(userId);  // Get user's FCM token (you may need to implement this function)
+        
+        // Send notification to the user
+        await fetch("http://localhost:5000/user/send-notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "Transaction Confirmed",
+            body: "Your order has been successfully confirmed.",
+            recipientToken: recipientToken,
+          }),
+        });
       }
     } catch (error) {
       console.error("Failed to process payment:", error);

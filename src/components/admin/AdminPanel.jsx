@@ -64,7 +64,6 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
                       alt="user photo"
                     />
                   </button>
-                  
                 </div>
                 <div
                   className="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600"
@@ -82,13 +81,13 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
                     <li>
                       <a
                         href="#"
-                        className="block px-4 py-2 text-sm text-green-500 hover:bg-gray-100 dark:hover:text-white"
+                        className="block px-4 py-2 text-sm w-full hover:bg-gray-100 dark:hover:text-white"
                         role="menuitem"
                       >
                         Dashboard
                       </a>
                     </li>
-                    <button onClick={logoutAdmin} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white">
+                    <button onClick={logoutAdmin} className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white">
                         Sign out
                     </button>
                   </ul>

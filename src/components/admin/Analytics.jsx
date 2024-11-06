@@ -60,7 +60,7 @@ function Analytics() {
   
     const salesByProduct = {};
     transactions.forEach((tx) => {
-      if (tx.items && Array.isArray(tx.items)) {  // Check if tx.items exists and is an array
+      if (tx.items && Array.isArray(tx.items)) { 
         tx.items.forEach((item) => {
           if (salesByProduct[item.name]) {
             salesByProduct[item.name] += item.quantity * item.price;
@@ -144,7 +144,6 @@ function Analytics() {
             </div>
           </div>
 
-          {/* Sales Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {chartData && (
               <>
@@ -156,7 +155,7 @@ function Analytics() {
                   <h2 className="text-lg font-semibold mb-4">Quantity Sold Over Time</h2>
                   <Line data={chartData.line} options={{ responsive: true, maintainAspectRatio: false }} height={400} />
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg col-span-1 lg:col-span-2" style={{ height: '400px' }}>
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg col-span-1 lg:col-span-2" style={{ height: '400px' }}>
                   <h2 className="text-lg font-semibold text-white mb-4">Sales by Product</h2>
                   <Doughnut data={chartData.pie} options={{ responsive: true, maintainAspectRatio: false }} height={500} />
                 </div>

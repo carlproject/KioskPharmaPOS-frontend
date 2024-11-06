@@ -69,23 +69,6 @@ const Product = () => {
     fetchTransactions();
     initMessaging();
   }, []);
-
-  // Add to Cart functionality
-  const handleAddToCart = async (product) => {
-    try {
-      await addDoc(collection(firestore, 'cart'), {
-        ...product,
-        quantity: 1,
-        userId: 'currentUserId', // Replace with actual user ID
-        checkoutStatus: 'processing',
-        timestamp: serverTimestamp()
-      });
-      alert(`${product.name} added to cart!`);
-    } catch (error) {
-      console.error('Error adding product to cart:', error);
-    }
-  };
-
   // Render functions
   const renderNotifications = () =>
     notifications.map((notification, index) => (
@@ -152,11 +135,6 @@ const Product = () => {
         <header className="text-center mb-8">
           <h1 className="text-3xl font-bold text-blue-600">Sales and Products for Casting</h1>
         </header>
-
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Product Catalog</h2>
-          {loading ? <p>Loading products...</p> : <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">{renderProducts()}</div>}
-        </section>
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">Notifications and Alerts</h2>
