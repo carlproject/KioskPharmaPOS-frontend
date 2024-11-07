@@ -84,6 +84,7 @@ function AddProduct() {
         setDosages(['']);
         setStockLevel(0);
       } else {
+        setLoading(false);
         alert('Failed to add product: ' + result.message);
       }
     } catch (error) {
@@ -345,7 +346,7 @@ function AddProduct() {
           </div>
         </section>
       </div>
-        {/* Loading Modal */}
+      
         {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="p-4 text-center bg-white rounded-lg shadow-md max-w-xs w-full">
@@ -360,7 +361,6 @@ function AddProduct() {
         </div>
       )}
 
-      {/* Success Modal */}
       {successModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="p-6 text-center bg-white rounded-lg shadow-md max-w-xs w-full">

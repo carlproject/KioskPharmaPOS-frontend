@@ -9,7 +9,7 @@ function Inventory() {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [newStockLevel, setNewStockLevel] = useState("");
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchInventory = () => {
@@ -18,7 +18,7 @@ function Inventory() {
         const productsData = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
-          imageLoaded: false // Track image loading
+          imageLoaded: false
         }));
         setProducts(productsData);
         setLoading(false);
@@ -92,8 +92,8 @@ function Inventory() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">Prescription Needed: {product.prescriptionNeeded ? 'Yes' : 'No'}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Dosages: {product.dosages.join(', ')}</p>
 
-                  <p className={`text-sm font-semibold mt-2 ${product.stockLevel < 10 ? 'text-red-500' : 'text-green-500'}`}>
-                    Stock Level: {product.stockLevel} {product.stockLevel < 10 ? ' - Low Stock!' : ''}
+                  <p className={`text-sm font-semibold mt-2 ${product.stockLevel === 0 ? 'text-red-500' : product.stockLevel < 10 ? 'text-orange-500' : 'text-green-500'}`}>
+                      Stock Level: {product.stockLevel} {product.stockLevel === 0 ? '- Out of Stock!' : product.stockLevel < 10 ? ' - Low Stock!' : ''}
                   </p>
 
                   <button 

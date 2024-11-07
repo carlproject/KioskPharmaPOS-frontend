@@ -26,26 +26,30 @@ function TryCart() {
 
 
 
-
   useEffect(() => {
     const fetchCartData = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/user/kiosk/cart/${userId}`);
+        
         if (response.data.success) {
-          setCartItems(response.data.products || []);
+          if (response.data.products.length === 0) {
+            setError("Your cart is empty.");
+          } else {
+            setCartItems(response.data.products);
+          }
         } else {
           setError("Cart not found.");
         }
       } catch (error) {
-        console.error("Failed to load cart data:", error);
-        setError("Failed to load cart data.");
+        console.error("Your Cart is empty", error);
+        setError("Your Cart is empty.");
       } finally {
         setLoading(false);
       }
     };
-
-
+    
     fetchCartData();
+    
 
     if (checkoutStatus) {
   
@@ -91,7 +95,6 @@ const handlePurchaseAndUpdateStock = async (userId) => {
         const productData = productSnapshot.data();
         const currentStockLevel = productData.stockLevel;
         
-        // Dynamically calculate the new stock level based on the cart item quantity
         const newStockLevel = currentStockLevel - item.quantity;
         console.log(`Current stock level for ${item.name}: ${currentStockLevel}`);
         console.log(`Attempting to reduce stock by: ${item.quantity}`);
@@ -183,6 +186,19 @@ const getUserFCMToken = async (userId) => {
   }
 };
 
+const clearUserCart = async (userId) => {
+  try {
+    const cartRef = doc(db, 'carts', userId);
+    
+    await updateDoc(cartRef, {
+      items: []  
+    });
+    console.log('User cart cleared successfully.');
+  } catch (error) {
+    console.error('Error clearing the user cart:', error);
+  }
+};
+
 
 const onConfirmCheckout = async (paymentMethod) => {
   setIsLoading(true);
@@ -224,9 +240,10 @@ const onConfirmCheckout = async (paymentMethod) => {
       } else {
         console.log("No valid recipient token found");
       }
-      
   
       await sendAdminNotification();
+
+      await clearUserCart(userId);
 
       setCheckoutStatus('success');
       navigate('/user/kiosk/order-summary', { state: { orderId, transactionData } });
@@ -281,11 +298,12 @@ const onConfirmCheckout = async (paymentMethod) => {
           body: JSON.stringify({
             title: "Transaction Confirmed",
             body: "Your order has been successfully confirmed.",
-            recipientToken: recipientToken,  // Get the user's FCM token
+            recipientToken: recipientToken,
           }),
         });
 
         await sendAdminNotification();
+        await clearUserCart(userId);
 
       }
     } catch (error) {
@@ -487,11 +505,11 @@ const removeToCart = async (productId) => {
           <div className="mt-6 grid grid-cols-3 gap-4 sm:mt-8">
             <div className="space-y-6 overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
               <a href="#" className="overflow-hidden rounded">
-                <img className="mx-auto h-44 w-44 dark:hidden" src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/apple-watch-light.svg" alt="imac image" />
-                <img className="mx-auto hidden h-44 w-44 dark:block" src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/apple-watch-dark.svg" alt="imac image" />
+                <img className="mx-auto h-44 w-44 dark:hidden" src="https://toppng.com/uploads/preview/medication-transparent-medical-picture-library-medication-pill-11563059442i6tjrher6h.png" alt="imac image" />
+                <img className="mx-auto hidden h-44 w-44 dark:block" src="https://toppng.com/uploads/preview/medication-transparent-medical-picture-library-medication-pill-11563059442i6tjrher6h.png" alt="imac image" />
               </a>
               <div>
-                <a href="#" className="text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white">Apple Watch Series 8</a>
+                <a href="#" className="text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white">Amopracin</a>
                 <p className="mt-2 text-base font-normal text-gray-500 dark:text-gray-400">This generation has some improvements, including a longer continuous battery life.</p>
               </div>
               <div>

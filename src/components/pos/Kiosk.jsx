@@ -26,17 +26,27 @@ const Kiosk = () => {
     const [loading, setLoading] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [cartCount, setCartCount] = useState(0);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const fetchProducts = async (category, isPrescription = false) => {
+        setLoading(true);
+        const productsRef = collection(db, "products");
+        let q;
+        
+        if (isPrescription) {
+            q = query(productsRef, where("prescriptionNeeded", "==", true));
+        } else {
+            q = query(productsRef, where("category", "==", category));
+        }
+        
+        const snapshot = await getDocs(q);
+        const productData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setProducts(productData);
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            setLoading(true);
-            const productsRef = collection(db, "products");
-            const q = query(productsRef, where("category", "==", selectedCategory));
-            const snapshot = await getDocs(q);
-            setProducts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-            setLoading(false);
-        };
-        fetchProducts();
+        fetchProducts(selectedCategory, selectedCategory === "Prescription Medication");
     }, [selectedCategory]);
 
     useEffect(() => {
@@ -53,9 +63,14 @@ const Kiosk = () => {
         fetchCartCount();
     }, []);
 
-    const handleCategoryChange = debounce((category) => {
+    const handleCategoryChange = (category) => {
+        setSearchTerm(""); 
         setSelectedCategory(category);
-    }, 200);
+    };
+
+    const handleSearchChange = debounce((e) => {
+        setSearchTerm(e.target.value);
+    }, 300);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
@@ -74,6 +89,10 @@ const Kiosk = () => {
     const handleProductClick = (productId) => {
         navigate(`/user/kiosk/View-Product/${productId}`);
     };
+
+    const filteredProducts = products.filter((product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="flex h-screen bg-gray-50">
@@ -98,10 +117,17 @@ const Kiosk = () => {
                 </ul>
             </aside>
 
-            {/* Main content */}
             <main className="flex-grow p-6 transition-all duration-300">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-3xl font-bold text-gray-800">{selectedCategory}</h2>
+                    <div className="flex items-center space-x-4">
+                        <h2 className="text-3xl font-bold text-gray-800">{selectedCategory}</h2>
+                        <input
+                            type="text"
+                            placeholder="Search product..."
+                            onChange={handleSearchChange}
+                            className="border border-gray-300 rounded-md p-2 focus:outline-none focus:border-green-500"
+                        />
+                    </div>
                     <div className="flex items-center space-x-4">
                         <button onClick={viewCart} className="relative">
                             <AiOutlineShoppingCart className="text-3xl text-green-600" />
@@ -110,6 +136,12 @@ const Kiosk = () => {
                                     {cartCount}
                                 </span>
                             )}
+                        </button>
+                        <button
+                            onClick={() => fetchProducts(selectedCategory, true)}
+                            className="bg-blue-500 text-white py-2 px-4 rounded-md focus:outline-none hover:bg-blue-600 transition-colors"
+                        >
+                            Show Prescription Medication
                         </button>
                         <button
                             onClick={toggleSidebar}
@@ -124,7 +156,7 @@ const Kiosk = () => {
                     <p className="text-gray-500 mt-4">Loading products...</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {products.map((product) => (
+                        {filteredProducts.map((product) => (
                             <div
                                 key={product.id}
                                 onClick={() => handleProductClick(product.id)}
