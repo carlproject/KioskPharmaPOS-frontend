@@ -4,14 +4,16 @@ import 'react-toastify/dist/ReactToastify.css';
 import { db } from '../../config/firebase';
 import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { onMessage } from "firebase/messaging";
-import { messaging } from '../../config/firebase'; // Adjust this path as needed
+import { messaging } from '../../config/firebase';
 
 function Notifications() {
   const [orders, setOrders] = useState([]);
   const [loadingOrderId, setLoadingOrderId] = useState(null);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
+
+  const userId = user.userId;
 
   useEffect(() => {
-    // Real-time listener for Firestore changes
     const unsubscribe = onSnapshot(collection(db, 'transactions'), (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         const orderData = { id: change.doc.id, ...change.doc.data() };
@@ -35,7 +37,6 @@ function Notifications() {
       });
     });
 
-    // Set up the onMessage listener for real-time notifications
     const requestNotificationPermission = async () => {
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
@@ -47,20 +48,83 @@ function Notifications() {
 
     requestNotificationPermission();
 
-    const onMessageListener = onMessage(messaging, (payload) => {
-      console.log("Message received: ", payload);
-      // Display the notification in the UI
-      if (payload.notification) {
-        toast.success(`${payload.notification.title}: ${payload.notification.body}`, {
-          position: 'top-right',
+    const getUserFCMToken = async (userId) => {
+      try {
+        const userRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userRef);
+    
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          return userData.fcmTokens || null;
+        } else {
+          console.log(`User with ID ${userId} does not exist`);
+          return null;
+        }
+      } catch (error) {
+        console.error("Error retrieving FCM token:", error);
+        return null;
+      }
+    };
+    
+    const updateOrderStatus = async (orderId, userId) => {
+      setLoadingOrderId(orderId);
+      try {
+        const orderRef = doc(db, "transactions", orderId);
+        await updateDoc(orderRef, { checkoutStatus: "Confirmed" });
+    
+        const recipientToken = await getUserFCMToken(userId);
+    
+        if (recipientToken) {
+          await fetch("http://localhost:5000/user/send-notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: "Order Ready for Pickup",
+              body: `Your order #${orderId} is ready at the counter.`,
+              recipientToken,
+            }),
+          });
+        }
+    
+        toast.success(`Order #${orderId} has been confirmed!`, {
+          position: "top-right",
           autoClose: 5000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
         });
+      } catch (error) {
+        console.error("Error updating order status:", error);
+        toast.error("Failed to confirm order. Please try again.");
+      } finally {
+        setLoadingOrderId(null);
+      }
+    };
+    
+
+    const onMessageListener = onMessage(messaging, (payload) => {
+      console.log("Notification received:", payload); 
+      if (payload.notification) {
+        const { title, body } = payload.notification;
+        const orderId = payload.data?.orderId;
+        const currentOrder = orders.find(order => order.id === orderId);
+    
+        if (currentOrder) {
+          toast.success(`${title}: ${body}`, {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        } else {
+          console.warn("Notification received, but no matching order found");
+        }
       }
     });
+    
 
     return () => {
       unsubscribe();
@@ -139,17 +203,18 @@ function Notifications() {
                     ))}
                   </div>
                   <div className="mt-4 flex justify-center">
-                    {order.checkoutStatus !== 'Confirmed' && (
-                      <button
-                        onClick={() => updateOrderStatus(order.id)}
-                        className={`${
-                          loadingOrderId === order.id ? 'bg-blue-300' : 'bg-blue-500 hover:bg-blue-600'
-                        } text-white px-4 py-2 rounded-md transition duration-300`}
-                        disabled={loadingOrderId === order.id}
-                      >
-                        {loadingOrderId === order.id ? 'Confirming...' : 'Confirm Order'}
-                      </button>
-                    )}
+                  {order.checkoutStatus !== 'Confirmed' && (
+                    <button
+                      onClick={() => updateOrderStatus(order.orderId, userId)}
+                      className={`${
+                        loadingOrderId === order.id ? 'bg-blue-300' : 'bg-blue-500 hover:bg-blue-600'
+                      } text-white px-4 py-2 rounded-md transition duration-300`}
+                      disabled={loadingOrderId === order.id}
+                    >
+                      {loadingOrderId === order.id ? 'Confirming...' : 'Confirm Order'}
+                    </button>
+                  )}
+
                   </div>
                 </div>
               ))}

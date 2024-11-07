@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { db } from '../../config/firebase';
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { debounce } from 'lodash';
-import { AiOutlineMedicineBox, AiOutlineHeart, AiOutlineSafety, AiOutlineUser, AiOutlineTool } from 'react-icons/ai';
+import { AiOutlineMedicineBox, AiOutlineSafety, AiOutlineUser, AiOutlineShoppingCart } from 'react-icons/ai';
 import { RiFirstAidKitFill } from 'react-icons/ri';
 import { getAuth } from "firebase/auth";
 import { MdMedicalInformation, MdOutlineMedication } from "react-icons/md";
+import { RxHamburgerMenu } from "react-icons/rx";
 import axios from 'axios';
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
   { name: "Prescription Medication", icon: <AiOutlineMedicineBox /> },
@@ -20,146 +21,129 @@ const categories = [
 
 const Kiosk = () => {
     const navigate = useNavigate();
-
     const [selectedCategory, setSelectedCategory] = useState(categories[0].name);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [isFullScreen, setIsFullScreen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [cartCount, setCartCount] = useState(0);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      const productsRef = collection(db, "products");
-      const q = query(productsRef, where("category", "==", selectedCategory));
-      const snapshot = await getDocs(q);
-      setProducts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-      setLoading(false);
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setLoading(true);
+            const productsRef = collection(db, "products");
+            const q = query(productsRef, where("category", "==", selectedCategory));
+            const snapshot = await getDocs(q);
+            setProducts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+            setLoading(false);
+        };
+        fetchProducts();
+    }, [selectedCategory]);
+
+    useEffect(() => {
+        const fetchCartCount = async () => {
+            const auth = getAuth();
+            const user = auth.currentUser;
+            if (user) {
+                const cartsRef = collection(db, "carts");
+                const cartQuery = query(cartsRef, where("userId", "==", user.uid));
+                const cartSnapshot = await getDocs(cartQuery);
+                setCartCount(cartSnapshot.docs.length);
+            }
+        };
+        fetchCartCount();
+    }, []);
+
+    const handleCategoryChange = debounce((category) => {
+        setSelectedCategory(category);
+    }, 200);
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
     };
 
-    fetchProducts();
-  }, [selectedCategory]);
-
-  const handleCategoryChange = debounce((category) => {
-    setSelectedCategory(category);
-  }, 200);
-
-  const toggleFullScreen = () => {
-    setIsFullScreen(!isFullScreen);
-  };
-
- const viewCart = () => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (!user) {
-        alert("You need to be logged in to add items to your cart.");
-        return;
-    }
-
-    const userId = user.uid;
-    navigate(`/user/kiosk/cart/${userId}`); 
- }
-
- const handleProductClick = (productId) => {
-  
-  navigate(`/user/kiosk/View-Product/${productId}`);
-};
-
-
-const addToCart = async (product) => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (!user) {
-        alert("You need to be logged in to add items to your cart.");
-        return;
-    }
-
-    const userId = user.uid;
-    
-
-    const requestBody = {
-        userId,
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        imageUrl: product.imageUrl,
-        quantity: 1,
-    };
-
-    try {
-        const response = await axios.post('http://localhost:5000/user/kiosk/cart/add', requestBody, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (response.data.success) {
-            alert(response.data.message);
-        } else {
-            console.error("Error adding to cart:", response.data.message);
-            alert(response.data.message);
+    const viewCart = () => {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) {
+            alert("You need to be logged in to view your cart.");
+            return;
         }
-    } catch (error) {
-        console.error("Error adding to cart:", error);
-        alert("There was an error adding to your cart. Please try again.");
-    }
-};
+        navigate(`/user/kiosk/cart/${user.uid}`);
+    };
 
-  return (
-    <div className={`flex h-screen ${isFullScreen ? "flex-col" : "flex-row"}`}>
-      {/* Sidebar */}
-      <aside className={`transition-transform duration-300 ${isFullScreen ? "hidden" : "block"} w-1/4 bg-green-600 text-white p-6`}>
-        <h2 className="text-xl font-semibold mb-4">Categories</h2>
-        <ul>
-          {categories.map((category) => (
-            <li
-              key={category.name}
-              className={`flex items-center p-2 cursor-pointer rounded transition-all duration-300 ${
-                selectedCategory === category.name ? "bg-green-800 text-white" : "hover:bg-green-700 text-gray-300"
-              }`}
-              onClick={() => handleCategoryChange(category.name)}
-            >
-              <span className="mr-2">{category.icon}</span>
-              {category.name}
-            </li>
-          ))}
-        </ul>
-      </aside>
+    const handleProductClick = (productId) => {
+        navigate(`/user/kiosk/View-Product/${productId}`);
+    };
 
-      {/* Main content */}
-      <main className={`flex-grow p-6 ${isFullScreen ? "w-full" : "w-3/4"} transition-all duration-300`}>
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">{selectedCategory}</h2>
-          <button
-            onClick={toggleFullScreen}
-            className="bg-green-500 text-white py-1 px-4 rounded focus:outline-none hover:bg-green-700 transition-colors"
-          >
-            {isFullScreen ? "Exit Full Screen" : "Full Screen"}
-          </button>
-          <button onClick={viewCart}>View Cart</button>
+    return (
+        <div className="flex h-screen bg-gray-50">
+            <aside className={`transition-all duration-500 ease-in-out ${isSidebarOpen ? "w-70" : "w-20"} bg-green-700 text-white p-6`}>
+                <button onClick={toggleSidebar} className="text-white mb-6 focus:outline-none">
+                    {isSidebarOpen ? <RxHamburgerMenu /> : ">>"}
+                </button>
+                {isSidebarOpen && <h2 className="text-2xl font-semibold mb-6">Categories</h2>}
+                <ul className="space-y-4">
+                    {categories.map((category) => (
+                        <li
+                            key={category.name}
+                            className={`flex items-center p-2 cursor-pointer rounded-md transition-all duration-300 ${
+                                selectedCategory === category.name ? "bg-green-800 text-white" : "hover:bg-green-600 text-gray-200"
+                            }`}
+                            onClick={() => handleCategoryChange(category.name)}
+                        >
+                            <span className="text-xl mr-4">{category.icon}</span>
+                            {isSidebarOpen && <span className="text-lg">{category.name}</span>}
+                        </li>
+                    ))}
+                </ul>
+            </aside>
+
+            {/* Main content */}
+            <main className="flex-grow p-6 transition-all duration-300">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-3xl font-bold text-gray-800">{selectedCategory}</h2>
+                    <div className="flex items-center space-x-4">
+                        <button onClick={viewCart} className="relative">
+                            <AiOutlineShoppingCart className="text-3xl text-green-600" />
+                            {cartCount > 0 && (
+                                <span className="absolute top-0 right-0 bg-red-600 text-white rounded-full text-xs px-2 py-0.5">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </button>
+                        <button
+                            onClick={toggleSidebar}
+                            className="bg-green-500 text-white py-2 px-4 rounded-md focus:outline-none hover:bg-green-600 transition-colors"
+                        >
+                            {isSidebarOpen ? "Shrink Sidebar" : "Expand Sidebar"}
+                        </button>
+                    </div>
+                </div>
+
+                {loading ? (
+                    <p className="text-gray-500 mt-4">Loading products...</p>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {products.map((product) => (
+                            <div
+                                key={product.id}
+                                onClick={() => handleProductClick(product.id)}
+                                className="border rounded-lg p-4 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                            >
+                                <img src={product.imageUrl} alt={product.name} className="w-full h-48 object-cover mb-4 rounded-md" />
+                                <h3 className="text-xl font-semibold text-gray-800">{product.name}</h3>
+                                <p className="text-gray-600 mt-1">Price: ${product.price}</p>
+                                <p className="text-gray-500 text-sm mt-1">{product.description}</p>
+                                <p className="text-sm mt-1 font-medium">
+                                    {product.prescriptionNeeded ? "Prescription Required" : "No Prescription Needed"}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </main>
         </div>
-
-        {loading ? (
-          <p className="mt-4">Loading products...</p>
-        ) : (
-          <div className={`grid ${isFullScreen ? "grid-cols-2 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"} gap-6 mt-4`}>
-            {products.map((product) => (
-              <div key={product.id} onClick={() => handleProductClick(product.id)} className="border rounded-lg p-4 shadow-md bg-white hover:shadow-lg transition-shadow duration-300">
-                <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover mb-2 rounded" />
-                <h3 className="text-lg font-semibold">{product.name}</h3>
-                <p className="text-gray-600">Price: ${product.price}</p>
-                <p className="text-sm">{product.description}</p>
-                <p className="text-sm">
-                  {product.prescriptionNeeded ? "Prescription Required" : "No Prescription Needed"}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
-  );
+    );
 };
 
 export default Kiosk;
