@@ -12,6 +12,7 @@ import Cart from './pages/kiosk/Cart';
 import Product from './pages/kiosk/Product';
 import OrderSummaryPage from './pages/kiosk/OrderSummaryPage';
 import PaymentSuccess from './pages/kiosk/PaymentSuccess';
+import PrescriptionHistoryPage from './pages/PrescriptionHistoryPage';
 
 function AppRoutes() {
 
@@ -33,6 +34,8 @@ function AppRoutes() {
       <Route path='/user/kiosk/View-Product/:productId' Component={Product}/>
       <Route path='/user/kiosk/payment-success' Component={PaymentSuccess}/>
       <Route path='/user/kiosk/order-summary' Component={OrderSummaryPage}/>
+      <Route path='/user/order-history' Component={PrescriptionHistoryPage}/>
+
       <Route path='/admin/' Component={AdminSide} />
       </Routes>
     </Router>
