@@ -2,9 +2,12 @@ import { React, useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { db } from '../../config/firebase';
+import { toast } from 'react-toastify';
 import { serverTimestamp, collection, doc, setDoc, writeBatch, updateDoc, getDocs, getDoc } from 'firebase/firestore';
 import { loadStripe} from '@stripe/stripe-js';
 import { IoIosArrowRoundBack } from 'react-icons/io';
+import LoadingSpinner from '../LoadingSpinner';
+import 'react-toastify/dist/ReactToastify.css';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -30,7 +33,6 @@ function TryCart() {
     const fetchCartData = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/user/kiosk/cart/${userId}`);
-        
         if (response.data.success) {
           if (response.data.products.length === 0) {
             setError("Your cart is empty.");
@@ -116,7 +118,6 @@ const handlePurchaseAndUpdateStock = async (userId) => {
     console.error("Error updating stock levels:", error);
   }
 };
-
 
 const getAdminFCMTokens = async () => {
   try {
@@ -211,7 +212,7 @@ const onConfirmCheckout = async (paymentMethod) => {
       userId,
       orderId,
       paymentMethod,
-      taxRate,
+      tax,
       discountAmount,
       items: cartItems,
       total: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
@@ -254,6 +255,12 @@ const onConfirmCheckout = async (paymentMethod) => {
       setIsLoading(false);
     }
   } else if (paymentMethod === 'E-wallet') {
+    const finalTotalAmount = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    if (finalTotalAmount < 30) {
+      setIsLoading(false); 
+      setCheckoutStatus('Minimum Order must be atleast 30. You can consider paying in cash, thankyouuu')
+      return;
+    }
     try {
       const orderId = `order-${Date.now()}`;
       
@@ -265,7 +272,7 @@ const onConfirmCheckout = async (paymentMethod) => {
           userId,
           orderId,
           paymentMethod,
-          taxRate,
+          tax,
           discountAmount,
           items: cartItems.map((item) => ({
             productId: item.productId,
@@ -301,8 +308,6 @@ const onConfirmCheckout = async (paymentMethod) => {
             recipientToken: recipientToken,
           }),
         });
-
-        await sendAdminNotification();
         await clearUserCart(userId);
 
       }
@@ -402,9 +407,6 @@ const removeToCart = async (productId) => {
 };
 
 
-  
-
-
   const originalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const discountAmount = isVoucherValid ? originalPrice * discountRate : originalPrice * 0.05;
@@ -427,8 +429,7 @@ const removeToCart = async (productId) => {
     }
   };
 
-
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <p>{error}</p>;
 
   return (
@@ -517,6 +518,40 @@ const removeToCart = async (productId) => {
                   <span className="line-through"> ₱1799,99 </span>
                 </p>
                 <p className="text-lg font-bold leading-tight text-red-600 dark:text-red-500">₱1199</p>
+              </div>
+              <div className="mt-6 flex items-center gap-2.5">
+                <button data-tooltip-target="favourites-tooltip-3" type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white p-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">
+                  <svg className="h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6C6.5 1 1 8 5.8 13l6.2 7 6.2-7C23 8 17.5 1 12 6Z"></path>
+                  </svg>
+                </button>
+                <div id="favourites-tooltip-3" role="tooltip" className="tooltip invisible absolute z-10 inline-block rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white opacity-0 shadow-sm transition-opacity duration-300 dark:bg-gray-700">
+                  Add to favourites
+                  <div className="tooltip-arrow" data-popper-arrow></div>
+                </div>
+
+                <button type="button" className="inline-flex w-full items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium  text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-primary-800">
+                  <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7h-1M8 7h-.688M13 5v4m-2-2h4" />
+                  </svg>
+                  Add to cart
+                </button>
+              </div>
+            </div>
+            <div className="space-y-6 overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <a href="#" className="overflow-hidden rounded">
+                <img className="mx-auto h-44 w-44 dark:hidden" src="https://toppng.com/uploads/preview/medication-transparent-medical-picture-library-medication-pill-11563059442i6tjrher6h.png" alt="imac image" />
+                <img className="mx-auto hidden h-44 w-44 dark:block" src="https://toppng.com/uploads/preview/medication-transparent-medical-picture-library-medication-pill-11563059442i6tjrher6h.png" alt="imac image" />
+              </a>
+              <div>
+                <a href="#" className="text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white">Ceterazin</a>
+                <p className="mt-2 text-base font-normal text-gray-500 dark:text-gray-400">This generation has some improvements, including a longer continuous battery life.</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  <span className="line-through"> ₱1799,99 </span>
+                </p>
+                <p className="text-lg font-bold leading-tight text-red-600 dark:text-red-500">₱879</p>
               </div>
               <div className="mt-6 flex items-center gap-2.5">
                 <button data-tooltip-target="favourites-tooltip-3" type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white p-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">

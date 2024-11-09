@@ -9,9 +9,6 @@ import { messaging } from '../../config/firebase';
 function Notifications() {
   const [orders, setOrders] = useState([]);
   const [loadingOrderId, setLoadingOrderId] = useState(null);
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
-
-  const userId = user.userId;
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'transactions'), (snapshot) => {
@@ -40,6 +37,9 @@ function Notifications() {
       const orderRef = doc(db, 'transactions', orderId);
       await updateDoc(orderRef, { checkoutStatus: 'Confirmed' });
       toast.success(`Order #${orderId} has been confirmed!`, { position: 'top-right', autoClose: 5000 });
+      setTimeout(() => {
+        toast.success(`Notified Successfully! #${orderId}!`, { position: 'top-right', autoClose: 5000 });
+      }, 1000)
     } catch (error) {
       console.error('Error updating order status:', error);
       toast.error('Failed to confirm order. Please try again.');
@@ -80,8 +80,8 @@ function Notifications() {
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                           <p className="text-gray-600">Payment Method: {order.paymentMethod}</p>
-                          <p className="text-gray-600">Discount: ₱{order.discountAmount.toFixed(2)}</p>
-                          <p className="text-gray-600">Tax Rate: {(order.taxRate * 100).toFixed(2)}%</p>
+                          <p className="text-red-500">Discount: ₱{order.discountAmount.toFixed(2)}</p>
+                          <p className="text-gray-600">Tax Rate: {(order.tax).toFixed(2)}</p>
                           <p className="text-gray-800 font-semibold">Total: ₱{order.total.toFixed(2)}</p>
                         </div>
                         <div>

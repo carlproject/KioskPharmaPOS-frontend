@@ -73,18 +73,18 @@ function OrderSummary() {
         }, 0);
         
         const totalDiscount = transactionData.discountAmount || 0;
-        const totalTax = transactionData.taxRate || 0;
+        const totalTax = transactionData.tax || 0;
     
-        const totalAmount = subtotal - totalDiscount + totalTax;
+        const totalAmount = (transactionData.total - transactionData.discountAmount) + transactionData.tax;
     
-        doc.text(`Subtotal: ₱${totalAmount.toFixed(2)}`, 10, finalY);
+        doc.text(`Subtotal: ₱${subtotal}`, 10, finalY);
         doc.text(`Discount: ₱${totalDiscount.toFixed(2)}`, 10, finalY + 10);
         doc.text(`Taxes: ₱${totalTax.toFixed(2)}`, 10, finalY + 20);
     
         doc.setTextColor(primaryColor);
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text(`Total: ₱${subtotal.toFixed(2)}`, 10, finalY + 35);
+        doc.text(`Total: ₱${totalAmount.toFixed(2)}`, 10, finalY + 35);
     
         doc.setTextColor(secondaryColor);
         doc.setFontSize(10);
@@ -112,8 +112,8 @@ function OrderSummary() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 py-6 border-y border-gray-100 mb-6">
                     <div className="box group">
-                        <p className="font-normal text-base leading-7 text-gray-500 mb-3 transition-all duration-500 group-hover:text-gray-700">Delivery Date</p>
-                        <h6 className="font-semibold font-manrope text-2xl leading-9 text-black"></h6>
+                        <p className="font-normal text-base leading-7 text-gray-500 mb-3 transition-all duration-500 group-hover:text-gray-700">Current Data</p>
+                        <h6 className="font-semibold font-manrope text-2xl leading-9 text-black">11-9-2024</h6>
                     </div>
                     <div className="box group">
                         <p className="font-normal text-base leading-7 text-gray-500 mb-3 transition-all duration-500 group-hover:text-gray-700">Order</p>
@@ -128,7 +128,6 @@ function OrderSummary() {
                         <button onClick={handleDownloadInvoice} className="font-semibold border-2 border-green-500 p-2 rounded-lg bg-green-600 text-white font-manrope text-2xl leading-9 text-black">Download</button>
                     </div>
                 </div>
-
                 {transactionData.items.map((item, index) => (
                     <div key={index} className="grid grid-cols-7 w-full pb-6 border-b border-gray-100">
                         <div className="col-span-7 min-[500px]:col-span-2 md:col-span-1">
@@ -150,19 +149,19 @@ function OrderSummary() {
                     <div className="w-full">
                         <div className="flex items-center justify-between mb-6">
                             <p className="font-normal text-xl leading-8 text-gray-500">Subtotal</p>
-                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{transactionData.total - (transactionData.discountAmount - transactionData.taxRate )}</p>
+                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{(transactionData.total).toFixed(2) }</p>
                         </div>
                         <div className="flex items-center justify-between mb-6">
-                            <p className="font-normal text-xl leading-8 text-gray-500">Savings</p>
-                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{transactionData.discountAmount}</p>
+                            <p className="font-normal text-xl leading-8 text-red-500">Savings</p>
+                            <p className="font-semibold text-xl leading-8 text-red-500">₱{(transactionData.discountAmount).toFixed(2)}</p>
                         </div>
                         <div className="flex items-center justify-between mb-6">
                             <p className="font-normal text-xl leading-8 text-gray-500">Taxes</p>
-                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{transactionData.taxRate}</p>
+                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{transactionData.tax.toFixed(2)}</p>
                         </div>
                         <div className="flex items-center justify-between border-t border-gray-100 pt-6">
                             <p className="font-semibold text-2xl leading-9 text-black">Total</p>
-                            <p className="font-semibold text-2xl leading-9 text-black">₱{transactionData.total}</p>
+                            <p className="font-semibold text-2xl leading-9 text-black">₱{((transactionData.total - transactionData.discountAmount) + transactionData.tax).toFixed(2)}</p>
                         </div>
                     </div>
                 </div>

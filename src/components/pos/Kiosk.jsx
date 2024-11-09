@@ -27,6 +27,8 @@ const Kiosk = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [cartCount, setCartCount] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isAuthenticated, setIsAuthenticated] = useState(false); // State to track prescription authentication
+    const [prescriptionFile, setPrescriptionFile] = useState(null); // State for the uploaded file
 
     const fetchProducts = async (category, isPrescription = false) => {
         setLoading(true);
@@ -43,6 +45,46 @@ const Kiosk = () => {
         const productData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setProducts(productData);
         setLoading(false);
+    };
+
+    // Function to verify prescription
+    const handleFileUpload = async (event) => {
+        const file = event.target.files[0];
+        setPrescriptionFile(file);
+
+        // You can display a preview of the uploaded file or do further validation
+        if (file) {
+            alert("File uploaded successfully!");
+        }
+    };
+
+    const verifyPrescription = async () => {
+        if (!prescriptionFile) {
+            alert("Please upload a prescription file.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("prescription", prescriptionFile);
+
+        try {
+            // Send the prescription file to the backend for authentication
+            const response = await axios.post('/api/authenticate-prescription', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+
+            if (response.data.isValid) {
+                setIsAuthenticated(true);
+                alert("Prescription authenticated successfully!");
+            } else {
+                alert("Invalid prescription.");
+            }
+        } catch (error) {
+            console.error("Error authenticating prescription:", error);
+            alert("Failed to authenticate prescription.");
+        }
     };
 
     useEffect(() => {
@@ -87,6 +129,10 @@ const Kiosk = () => {
     };
 
     const handleProductClick = (productId) => {
+        if (selectedCategory === "Prescription Medication" && !isAuthenticated) {
+            alert("You must authenticate your prescription before viewing this product.");
+            return;
+        }
         navigate(`/user/kiosk/View-Product/${productId}`);
     };
 
@@ -96,7 +142,7 @@ const Kiosk = () => {
 
     return (
         <div className="flex h-screen bg-gray-50">
-            <aside className={`transition-all duration-500 ease-in-out ${isSidebarOpen ? "w-70" : "w-20"} bg-green-700 text-white p-6`}>
+            <aside className={`transition-all duration-500 ease-in-out ${isSidebarOpen ? "w-74" : "w-20"} bg-green-700 text-white p-6`}>
                 <button onClick={toggleSidebar} className="text-white mb-6 focus:outline-none">
                     {isSidebarOpen ? <RxHamburgerMenu /> : ">>"}
                 </button>
@@ -105,9 +151,7 @@ const Kiosk = () => {
                     {categories.map((category) => (
                         <li
                             key={category.name}
-                            className={`flex items-center p-2 cursor-pointer rounded-md transition-all duration-300 ${
-                                selectedCategory === category.name ? "bg-green-800 text-white" : "hover:bg-green-600 text-gray-200"
-                            }`}
+                            className={`flex items-center p-2 cursor-pointer rounded-md transition-all duration-300 ${selectedCategory === category.name ? "bg-green-800 text-white" : "hover:bg-green-600 text-gray-200"}`}
                             onClick={() => handleCategoryChange(category.name)}
                         >
                             <span className="text-xl mr-4">{category.icon}</span>
@@ -137,41 +181,54 @@ const Kiosk = () => {
                                 </span>
                             )}
                         </button>
-                        <button
-                            onClick={() => fetchProducts(selectedCategory, true)}
-                            className="bg-blue-500 text-white py-2 px-4 rounded-md focus:outline-none hover:bg-blue-600 transition-colors"
-                        >
-                            Show Prescription Medication
-                        </button>
-                        <button
-                            onClick={toggleSidebar}
-                            className="bg-green-500 text-white py-2 px-4 rounded-md focus:outline-none hover:bg-green-600 transition-colors"
-                        >
-                            {isSidebarOpen ? "Shrink Sidebar" : "Expand Sidebar"}
-                        </button>
+                        {selectedCategory === "Prescription Medication" && (
+                            <div className="flex items-center pl-8">
+                                <input 
+                                    type="file" 
+                                    onChange={handleFileUpload}
+                                    className="text-sm file:border-0 file:bg-blue-500 file:text-white file:py-1 file:px-3 file:rounded-md hover:file:bg-blue-600 focus:outline-none transition-colors"
+                                />
+                                {prescriptionFile && (
+                                    <span className="text-sm text-gray-700">File Selected</span>
+                                )}
+                            </div>
+                        )}
+
                     </div>
                 </div>
 
                 {loading ? (
                     <p className="text-gray-500 mt-4">Loading products...</p>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {filteredProducts.map((product) => (
                             <div
-                                key={product.id}
-                                onClick={() => handleProductClick(product.id)}
-                                className="border rounded-lg p-4 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                            key={product.id}
+                            onClick={() => handleProductClick(product.id)}
+                            className="relative group bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer transition-all hover:shadow-md"
                             >
-                                <img src={product.imageUrl} alt={product.name} className="w-full h-48 object-cover mb-4 rounded-md" />
-                                <h3 className="text-xl font-semibold text-gray-800">{product.name}</h3>
-                                <p className="text-gray-600 mt-1">Price: ${product.price}</p>
-                                <p className="text-gray-500 text-sm mt-1">{product.description}</p>
-                                <p className="text-sm mt-1 font-medium">
-                                    {product.prescriptionNeeded ? "Prescription Required" : "No Prescription Needed"}
-                                </p>
+                            <img
+                                src={product.imageUrl}
+                                alt={product.name}
+                                className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+
+                            <div className="p-4">
+                                <h3 className="text-lg font-semibold text-gray-800 group-hover:text-green-600 transition-colors duration-300">
+                                {product.name}
+                                </h3>
+
+                                <p className="text-sm text-gray-500 mt-2 line-clamp-2">{product.description}</p>
+
+                                <p className="text-lg font-semibold text-gray-900 mt-4">₱{product.price}</p>
+                            </div>
+
+                            <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
                             </div>
                         ))}
-                    </div>
+                        </div>
+
+
                 )}
             </main>
         </div>

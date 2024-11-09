@@ -9,4 +9,4 @@ function OrderSummaryPage() {
   )
 }
 
-export default OrderSummaryPage
+export default OrderSummaryPage;

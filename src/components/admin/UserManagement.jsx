@@ -117,7 +117,7 @@ function UserManagement() {
                   <tr key={user.id} className="hover:bg-green-100 transition-colors">
                     <td className="px-4 py-3">
                       <img
-                        src={user.photoURL || "https://i.pinimg.com/1200x/8f/d4/5a/8fd45af5a41fbde94c10b591281a4c50.jpg"}
+                        src={user.photoURL || "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/d1429654-7460-4219-b126-9d445bf52684/dghfe0c-6d453123-3a63-47d6-9001-eb09bb833ffe.jpg/v1/fill/w_1280,h_1670,q_75,strp/default_cute_tiny_hyperrealistic_anime_wolf_made_o_by_paulosc_yumisilva_dghfe0c-fullview.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTY3MCIsInBhdGgiOiJcL2ZcL2QxNDI5NjU0LTc0NjAtNDIxOS1iMTI2LTlkNDQ1YmY1MjY4NFwvZGdoZmUwYy02ZDQ1MzEyMy0zYTYzLTQ3ZDYtOTAwMS1lYjA5YmI4MzNmZmUuanBnIiwid2lkdGgiOiI8PTEyODAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.rqoc5_RKhJAo34sAGz64YUwOplXb0RgN8zfNDPGKAfc"}
                         alt={user.displayName || `${user.FirstName} ${user.LastName}`}
                         className="w-16 h-16 rounded-full border-2 border-green-500"
                       />
