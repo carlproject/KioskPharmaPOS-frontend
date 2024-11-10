@@ -9,6 +9,7 @@ import Analytics from '../../components/admin/Analytics'
 import Notifications from '../../components/admin/Notifications'
 import { getToken } from 'firebase/messaging'
 import { messaging } from '../../config/firebase'
+import PrescriptionManagement from '../../components/admin/PrescriptionManagement'
 
 function AdminSide() {
   const navigate = useNavigate();
@@ -39,7 +40,9 @@ function AdminSide() {
       case 'Analytics':
         return <Analytics />
       case 'Notifications And Messages':
-        return <Notifications />
+        return <Notifications />;
+      case 'Prescription Management':
+        return <PrescriptionManagement />;
       default:
         return <AddProduct />;
     }

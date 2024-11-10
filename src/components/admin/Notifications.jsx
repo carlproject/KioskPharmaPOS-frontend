@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { db } from '../../config/firebase';
-import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { onMessage } from "firebase/messaging";
 import { messaging } from '../../config/firebase';
 
@@ -36,10 +36,29 @@ function Notifications() {
     try {
       const orderRef = doc(db, 'transactions', orderId);
       await updateDoc(orderRef, { checkoutStatus: 'Confirmed' });
+  
+      // Retrieve userId from the order
+      const orderDoc = await getDoc(orderRef);
+      const { userId } = orderDoc.data();
+  
+      // Send notification to user
+      await fetch('http://localhost:5000/admin/send-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          title: "Order Confirmed",
+          message: `Your order #${orderId} has been confirmed!`,
+          orderId: orderId,
+        }),
+      });
+  
       toast.success(`Order #${orderId} has been confirmed!`, { position: 'top-right', autoClose: 5000 });
       setTimeout(() => {
         toast.success(`Notified Successfully! #${orderId}!`, { position: 'top-right', autoClose: 5000 });
-      }, 1000)
+      }, 1000);
     } catch (error) {
       console.error('Error updating order status:', error);
       toast.error('Failed to confirm order. Please try again.');
@@ -47,6 +66,7 @@ function Notifications() {
       setLoadingOrderId(null);
     }
   };
+  
 
   return (
     <div className="p-4 sm:ml-64">
