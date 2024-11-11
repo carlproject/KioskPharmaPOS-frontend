@@ -27,6 +27,7 @@ function AppRoutes() {
           <Route path="/" Component={LandingPage} />
           <Route path="/meet-the-team" Component={MeetTheTeam} />
           <Route path="/contact-us" Component={Contact} />
+          <Route path='/user/order-history' Component={PrescriptionHistoryPage}/>
        </Route>
 
       <Route path='/user/kiosk' Component={MainKiosk}/>
@@ -34,7 +35,6 @@ function AppRoutes() {
       <Route path='/user/kiosk/View-Product/:productId' Component={Product}/>
       <Route path='/user/kiosk/payment-success' Component={PaymentSuccess}/>
       <Route path='/user/kiosk/order-summary' Component={OrderSummaryPage}/>
-      <Route path='/user/order-history' Component={PrescriptionHistoryPage}/>
 
       <Route path='/admin/' Component={AdminSide} />
       </Routes>

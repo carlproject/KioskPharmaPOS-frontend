@@ -4,9 +4,15 @@ import { db } from '../../config/firebase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingSpinner from '../LoadingSpinner';
+import axios from 'axios';
+import { getMessaging, getToken } from 'firebase/messaging';
+
+const messaging = getMessaging();
 
 function Inventory() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [newStockLevel, setNewStockLevel] = useState("");
   const [loading, setLoading] = useState(true);
@@ -21,6 +27,18 @@ function Inventory() {
           imageLoaded: false
         }));
         setProducts(productsData);
+
+        productsData.forEach(product => {
+          if (product.stockLevel < 10) {
+            sendLowStockNotification(product);
+          }
+        });
+
+        const uniqueCategories = [
+          ...new Set(productsData.map((product) => product.category))
+        ];
+        setCategories(['All', ...uniqueCategories]);
+
         setLoading(false);
       });
 
@@ -29,6 +47,21 @@ function Inventory() {
 
     fetchInventory();
   }, []);
+
+  const sendLowStockNotification = async (product) => {
+    try {
+      const token = await getToken(messaging, { vapidKey: import.meta.env.VITE_VAPID_PUBLIC_KEY});
+      if (token) {
+        await axios.post('http://localhost:5000/user/send-notification', {
+          recipientToken: [token], // Pass token as an array
+          title: `Low Stock Alert: ${product.name}`,
+          body: `Only ${product.stockLevel} left! Restock soon.`,
+        });
+      }
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  };
 
   const handleRestock = async () => {
     if (selectedProduct && newStockLevel) {
@@ -66,6 +99,10 @@ function Inventory() {
     }
   };
 
+  const filteredProducts = selectedCategory === 'All'
+    ? products
+    : products.filter(product => product.category === selectedCategory);
+
   return (
     <div className="p-4 sm:ml-64 bg-gray-100 min-h-screen">
       <div className="p-6 border-2 border-gray-300 bg-white rounded-lg dark:border-gray-700 shadow-lg mt-14">
@@ -73,11 +110,25 @@ function Inventory() {
           <h1 className="text-3xl font-bold mb-4 text-green-600">Inventory Management</h1>
           <p className="text-gray-700 mb-6">Manage stock levels, track batches, and get real-time alerts for low inventory or upcoming expirations.</p>
 
+          <div className="flex gap-4 mb-6">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded ${
+                  selectedCategory === category ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
           {loading ? (
             <LoadingSpinner />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product, index) => (
+              {filteredProducts.map((product, index) => (
                 <div key={product.id} className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow transform hover:-translate-y-1">
                   <img 
                     src={product.imageUrl} 
