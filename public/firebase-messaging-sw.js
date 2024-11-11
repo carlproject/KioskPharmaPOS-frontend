@@ -1,19 +1,26 @@
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
-let firebaseInitialized = false;
+const firebaseConfig = {
+  apiKey: 'AIzaSyBAPuUHFKVrzMHA_CWxBITCqci6-RK5Beg',
+  authDomain: 'pharma-kiosk-ad218.firebaseapp.com',
+  projectId: 'pharma-kiosk-ad218',
+  storageBucket: 'pharma-kiosk-ad218.appspot.com',
+  messagingSenderId: '270716874976',
+  appId: '1:270716874976:web:cd7c864190e61919912085',
+};
 
-self.addEventListener('message', (event) => {
-  if (!firebaseInitialized && event.data.firebaseConfig) {
-    firebase.initializeApp(event.data.firebaseConfig);
-    firebaseInitialized = true;
+firebase.initializeApp(firebaseConfig);
 
-    const messaging = firebase.messaging();
+const messaging = firebase.messaging();
 
-    messaging.onBackgroundMessage((payload) => {
-      console.log('Received background message:', payload);
-      // Optionally, show a notification here
-      self.registration.showNotification(payload.notification.title, { body: payload.notification.body });
-    });
-  }
+messaging.onBackgroundMessage(function (payload) {
+  const notificationTitle = payload.notification?.title || "Default Title";
+  const notificationOptions = {
+    body: payload.notification?.body || "Default body",
+    icon: payload.notification?.icon || '/default-icon.png',  // Update with your icon path
+    data: payload.data, 
+  };
+  self.registration.showNotification(notificationTitle, notificationOptions);
+  console.log('Received background message:', payload);
 });

@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { getMessaging } from "firebase/messaging";
+import { getMessaging, onMessage } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_APP_FIREBASE_API_KEY,
@@ -22,6 +22,12 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const messaging = getMessaging(app)
+
+
+onMessage(messaging, (payload) => {
+  console.log('Message received. ', payload);
+});
+
 
 export { app, analytics, db, auth, messaging };
 

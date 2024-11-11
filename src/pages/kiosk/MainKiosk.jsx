@@ -15,7 +15,10 @@ function MainKiosk() {
     // Listen for foreground messages
     onMessage(messaging, (payload) => {
       console.log("Foreground message received: ", payload);
-      toast.info(`New Notification: ${payload.notification.title}`, {
+
+      const { title, body } = payload.notification;
+      const orderId = payload.data?.orderId;
+      toast.info(`New Notification: ${title}, ${orderId}`, {
         position: "top-right",
         autoClose: 5000,
       });
