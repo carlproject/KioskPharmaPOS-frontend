@@ -12,7 +12,6 @@ function MainKiosk() {
   useEffect(() => {
     requestNotificationPermission();
 
-    // Listen for foreground messages
     onMessage(messaging, (payload) => {
       console.log("Foreground message received: ", payload);
 

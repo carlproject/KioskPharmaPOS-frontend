@@ -27,8 +27,6 @@ function TryCart() {
   const [isVoucherValid, setIsVoucherValid] = useState(false);
   const [savings, setSavings] = useState(0.05);
 
-
-
   useEffect(() => {
     const fetchCartData = async () => {
       try {
@@ -52,7 +50,6 @@ function TryCart() {
     
     fetchCartData();
     
-
     if (checkoutStatus) {
   
       const timer = setTimeout(() => {
@@ -66,7 +63,6 @@ function TryCart() {
 
 const handleCheckoutClick = () => setShowPaymentModal(true);
 const handleCloseModal = () => setShowPaymentModal(false);
-
 
 
 const handlePurchaseAndUpdateStock = async (userId) => {
@@ -121,16 +117,15 @@ const handlePurchaseAndUpdateStock = async (userId) => {
 
 const getAdminFCMTokens = async () => {
   try {
-    const adminRef = doc(db, "admin", "checachio@gmail.com"); 
-
+    const adminRef = doc(db, "admin", "checachio@gmail.com");
     const adminDoc = await getDoc(adminRef);
 
     if (adminDoc.exists()) {
       const data = adminDoc.data();
       const fcmTokens = data.fcmTokens || [];
-
+      
       if (fcmTokens.length > 0) {
-        return fcmTokens[0];
+        return fcmTokens;
       } else {
         console.warn("No FCM tokens found for the admin.");
         return null;
@@ -147,16 +142,18 @@ const getAdminFCMTokens = async () => {
 
 const sendAdminNotification = async () => {
   try {
-    const adminFCMToken = await getAdminFCMTokens();
-
-    if (adminFCMToken) {
-      await fetch("http://localhost:5000/admin/send-notification", {
+    const orderId = `order-${Date.now()}`;
+    const adminFCMTokens = await getAdminFCMTokens();
+    
+    if (adminFCMTokens && adminFCMTokens.length > 0) {
+      await fetch("http://localhost:5000/user/send-notification/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: "New Order",
-          body: "A new order has been placed.",
-          recipientToken: adminFCMToken,
+          message: "A new order has been placed.",
+          orderId: orderId,
+          fcmTokens: adminFCMTokens,
         }),
       });
     } else {
@@ -167,10 +164,10 @@ const sendAdminNotification = async () => {
   }
 };
 
+
 const getUserFCMToken = async (userId) => {
   try {
     const userRef = doc(db, "users", userId);
-
     const userDoc = await getDoc(userRef);
 
     if (userDoc.exists()) {

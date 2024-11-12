@@ -10,12 +10,15 @@ import Product from '../../components/admin/Product';
 import Analytics from '../../components/admin/Analytics';
 import Notifications from '../../components/admin/Notifications';
 import PrescriptionManagement from '../../components/admin/PrescriptionManagement';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify styles
 
 function AdminSide() {
   const navigate = useNavigate();
   const [activeComponent, setActiveComponent] = useState('Dashboard');
   const [adminCredential, setAdminCredential] = useState(JSON.parse(localStorage.getItem('adminCredentials')));
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const isAdminAuthenticated = sessionStorage.getItem('isAdminAuthenticated');
@@ -28,12 +31,19 @@ function AdminSide() {
   useEffect(() => {
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('Foreground notification received:', payload);
-      alert(`New notification: ${payload.notification.title}`);
+      const newNotification = {
+        title: payload.notification.title,
+        message: payload.notification.body,
+        timestamp: new Date(),
+      };
+      toast.info(`New notification: ${payload.notification.title}`, { position: 'top-right', autoClose: 5000 });
+    
+
+      setNotifications((prevNotifications) => [newNotification, ...prevNotifications]);
     });
-  
-    return () => unsubscribe(); // Clean up the listener when the component unmounts
+
+    return () => unsubscribe();
   }, []);
-  
 
   const requestNotificationPermission = async () => {
     try {
@@ -97,6 +107,7 @@ function AdminSide() {
       <div className="flex-1 p-2">
         {renderComponent()}
       </div>
+      <ToastContainer />
     </>
   );
 }

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable"; 
 import { IoIosArrowRoundBack } from "react-icons/io";
+import logo from '../../assets/img/logo.png'
 
 function OrderSummary() {
     const location = useLocation();
@@ -13,33 +14,37 @@ function OrderSummary() {
     if (!transactionData) {
         return <p>Loading...</p>;
     }
+
+
     const handleDownloadInvoice = () => {
         const doc = new jsPDF();
-    
+        
         const primaryColor = "#2F855A"; 
         const secondaryColor = "#4A5568"; 
-    
+
+        doc.addImage(logo, "PNG", 10, 10, 30, 30);
         doc.setFontSize(22);
         doc.setTextColor(primaryColor);
-        doc.text("Checacio Pharmacy", 10, 20);
-        
-        doc.setFontSize(14);
+        doc.text("Checacio Pharmacy", 50, 20);
+
+        doc.setFontSize(12);
         doc.setTextColor("#000000");
-        doc.text(`Order Confirmation`, 10, 30);
+        doc.text(`Dose, Bayanan II, Calapan City, Oriental Mindoro, Philippines`, 50, 30);
+        
         doc.setFontSize(12);
         doc.setTextColor(secondaryColor);
-        doc.text(`Order for: ${displayName}`, 10, 40);
-        doc.text(`Order ID: ${orderId}`, 10, 50);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 60);
-        doc.text(`Payment Method: ${transactionData.paymentMethod}`, 10, 70);
-    
+        doc.text(`Order for: ${displayName}`, 10, 50);
+        doc.text(`Order ID: ${orderId}`, 10, 60);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 70);
+        doc.text(`Payment Method: ${transactionData.paymentMethod}`, 10, 80);
+        
         doc.setDrawColor(200, 200, 200);
-        doc.line(10, 75, 200, 75);
-    
+        doc.line(10, 85, 200, 85);
+
         doc.setFontSize(16);
         doc.setTextColor(primaryColor);
-        doc.text("Order Summary", 10, 85);
-    
+        doc.text("Order Summary", 10, 95);
+
         const itemRows = transactionData.items.map(item => ([
             item.name,
             item.dosage || "N/A",
@@ -47,9 +52,9 @@ function OrderSummary() {
             `₱${item.price.toFixed(2)}`,
             `₱${(item.price * item.quantity).toFixed(2)}`
         ]));
-    
+        
         doc.autoTable({
-            startY: 90,
+            startY: 100,
             head: [["Item Name", "Dosage", "Quantity", "Price", "Total"]],
             body: itemRows,
             theme: "striped",
@@ -62,38 +67,33 @@ function OrderSummary() {
             styles: { cellPadding: 4, fontSize: 10 },
             columnStyles: { 4: { halign: "right" } }
         });
-    
+
         let finalY = doc.previousAutoTable.finalY + 10;
-    
+
         doc.setTextColor(secondaryColor);
         doc.setFontSize(12);
         
-        const subtotal = transactionData.items.reduce((acc, item) => {
-            return acc + (item.price * item.quantity);
-        }, 0);
-        
+        const subtotal = transactionData.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
         const totalDiscount = transactionData.discountAmount || 0;
         const totalTax = transactionData.tax || 0;
-    
         const totalAmount = (transactionData.total - transactionData.discountAmount) + transactionData.tax;
-    
-        doc.text(`Subtotal: ₱${subtotal}`, 10, finalY);
+
+        doc.text(`Subtotal: ₱${subtotal.toFixed(2)}`, 10, finalY);
         doc.text(`Discount: ₱${totalDiscount.toFixed(2)}`, 10, finalY + 10);
         doc.text(`Taxes: ₱${totalTax.toFixed(2)}`, 10, finalY + 20);
-    
+
         doc.setTextColor(primaryColor);
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
         doc.text(`Total: ₱${totalAmount.toFixed(2)}`, 10, finalY + 35);
-    
+
         doc.setTextColor(secondaryColor);
         doc.setFontSize(10);
         doc.text("Thank you for your purchase!", 10, finalY + 50);
         doc.text("For questions, contact Checacio Pharmacy customer support.", 10, finalY + 55);
-    
+
         doc.save(`Checacio_Invoice_${orderId}.pdf`);
     };
-    
 
     return (
         <section className="py-24 relative">
