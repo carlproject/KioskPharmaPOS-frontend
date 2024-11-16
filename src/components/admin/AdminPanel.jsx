@@ -1,8 +1,12 @@
 import React from 'react';
+import { useState } from 'react';
 import logo from '../../assets/img/logo.png'
 import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = ({ setActiveComponent, activeComponent }) => {
+  
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("stocks");
   const navigate = useNavigate();
   const logoutAdmin = () => {
     sessionStorage.removeItem('isAdminAuthenticated')
@@ -11,94 +15,117 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
   }
   const adminEmail = sessionStorage.getItem('adminCredentials');
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prevState) => !prevState);
+  };
+
   return (
     <>
-      <nav className="fixed top-0 z-50 w-full bg-blue-950 border-b-2 border-b-green-400">
-  <div className="px-3 py-3 lg:px-5 lg:pl-3">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center justify-start rtl:justify-end">
-        <button
-          data-drawer-target="logo-sidebar"
-          data-drawer-toggle="logo-sidebar"
-          aria-controls="logo-sidebar"
-          type="button"
-          className="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-        >
-          <span className="sr-only">Open sidebar</span>
-          <svg
-            className="w-6 h-6"
-            aria-hidden="true"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              clipRule="evenodd"
-              fillRule="evenodd"
-              d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
-            ></path>
-          </svg>
-        </button>
-        <a href="#" className="flex ms-2 md:me-24">
-          <img src={logo} className="h-8 me-3" alt="Chehacio Logo" />
-          <span className="self-center text-xl text-green-500 font-semibold sm:text-2xl whitespace-nowrap">
-            Checacio's Store
-          </span>
-        </a>
-      </div>
-
-      {/* Notification and User Profile */}
-      <div className="flex items-center">
-        {/* Notification Icon with Dropdown */}
-        <div className="relative">
-          <button
-            type="button"
-            className="text-white focus:outline-none mr-4"
-            aria-expanded="false"
-            data-dropdown-toggle="dropdown-notifications"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341A6.002 6.002 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m1 4a3 3 0 006 0H10z"></path>
-            </svg>
-            <span className="absolute top-0 right-4 block h-2.5 w-2.5 bg-red-600 border-2 border-blue-950 rounded-full"></span>
-          </button>
-          <div
-            id="dropdown-notifications"
-            className="z-50 hidden absolute right-0 mt-2 w-60 bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600"
-          >
-            <div className="py-2 px-4 text-sm text-gray-700 dark:text-gray-200">
-              Notifications
-            </div>
-            <ul className="py-1 text-sm text-gray-700 dark:text-gray-200">
-              <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-                <a href="#">New message received</a>
-              </li>
-              <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-                <a href="#">Product added successfully</a>
-              </li>
-              <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-                <a href="#">Low stock alert</a>
-              </li>
-            </ul>
-          </div>
+    <nav className="fixed top-0 z-50 w-full bg-blue-950 border-b-2 border-b-green-400">
+      <div className="px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <img src={logo} alt="Checacio Logo" className="h-8" />
+          <h1 className="text-xl font-bold text-green-500">Checacio's Store</h1>
         </div>
 
-        {/* Profile Icon with Dropdown */}
-        <div className="flex items-center ms-3">
-          <button
-            type="button"
-            className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-            aria-expanded="false"
-            data-dropdown-toggle="dropdown-user"
-          >
-            <span className="sr-only">Open user menu</span>
-            <img
-              className="w-8 h-8 rounded-full"
-              src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-              alt="user photo"
-            />
-          </button>
-          <div
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <button
+              onClick={toggleDropdown}
+              type="button"
+              className="relative text-white hover:text-green-400"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341A6.002 6.002 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m1 4a3 3 0 006 0H10z"
+                />
+              </svg>
+              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border border-blue-950"></span>
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg">
+                <div className="flex justify-between border-b border-gray-200">
+                  <button
+                    className={`w-1/2 py-2 text-center text-sm font-medium ${
+                      activeTab === "stocks"
+                        ? "text-green-500 border-b-2 border-green-500"
+                        : "text-gray-600 hover:text-green-500"
+                    }`}
+                    onClick={() => setActiveTab("stocks")}
+                  >
+                    Stocks
+                  </button>
+                  <button
+                    className={`w-1/2 py-2 text-center text-sm font-medium ${
+                      activeTab === "orders"
+                        ? "text-green-500 border-b-2 border-green-500"
+                        : "text-gray-600 hover:text-green-500"
+                    }`}
+                    onClick={() => setActiveTab("orders")}
+                  >
+                    New Orders
+                  </button>
+                </div>
+
+                <div className="p-4 space-y-3">
+                  {activeTab === "stocks" ? (
+                    <>
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold text-green-500">
+                          Product A
+                        </span>{" "}
+                        is low in stock.
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold text-green-500">
+                          Product B
+                        </span>{" "}
+                        has been restocked.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold text-green-500">
+                          Order #1234
+                        </span>{" "}
+                        has been placed.
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold text-green-500">
+                          Order #1235
+                        </span>{" "}
+                        is ready for shipping.
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="relative">
+            <button
+              type="button"
+              className="flex items-center bg-gray-800 text-white rounded-full w-8 h-8 focus:ring-2 focus:ring-green-400"
+            >
+              <img
+                src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                alt="User Avatar"
+                className="rounded-full"
+              />
+            </button>
+            <div
             id="dropdown-user"
             className="z-50 hidden absolute right-0 mt-2 w-48 bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600"
           >
@@ -127,11 +154,10 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
               </button>
             </ul>
           </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</nav>
+    </nav>
 
 
       <aside
