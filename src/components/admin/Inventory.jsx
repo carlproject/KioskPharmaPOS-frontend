@@ -53,7 +53,7 @@ function Inventory() {
       const token = await getToken(messaging, { vapidKey: import.meta.env.VITE_VAPID_PUBLIC_KEY});
       if (token) {
         await axios.post('http://localhost:5000/user/send-notification', {
-          recipientToken: [token], // Pass token as an array
+          recipientToken: [token],
           title: `Low Stock Alert: ${product.name}`,
           body: `Only ${product.stockLevel} left! Restock soon.`,
         });
