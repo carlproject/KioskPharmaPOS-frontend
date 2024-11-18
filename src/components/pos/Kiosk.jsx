@@ -116,13 +116,14 @@ const Kiosk = () => {
 
   const viewCart = () => {
     const auth = getAuth();
-    const user = auth.currentUser;
-    if (!user) {
-      alert("You need to be logged in to view your cart.");
-      return;
-    }
+        const firebaseUser = auth.currentUser; 
+        const manualUser = JSON.parse(localStorage.getItem('user'));
+    
+    const user = firebaseUser || manualUser;
     navigate(`/user/kiosk/cart/${user.uid}`);
   };
+
+
 
   const handleProductClick = (productId) => {
     if (selectedCategory === "Prescription Medication" && !isAuthenticated) {

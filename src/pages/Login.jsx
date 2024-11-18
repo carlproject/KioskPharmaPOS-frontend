@@ -79,6 +79,7 @@ function Login() {
   
       if (isPasswordCorrect) {
         localStorage.setItem('user', JSON.stringify({
+          uid: querySnapshot.docs[0].id, 
           email: userData.email,
           displayName: userData.FirstName + ' ' + userData.LastName,
           photoURL: 'https://humanrightsrilanka.org/wp-content/uploads/2019/04/iStock-476085198.jpg',

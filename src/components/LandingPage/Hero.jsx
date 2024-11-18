@@ -4,18 +4,20 @@ import { getAuth } from 'firebase/auth';
 
 function Hero() {
   const navigate = useNavigate();
+
   const checkLogin = () => {
     const auth = getAuth();
-    const user = auth.currentUser;
+    const firebaseUser = auth.currentUser; 
+    const manualUser = JSON.parse(localStorage.getItem('user'));
 
-    if (!user) {
-        alert("You need to be logged in first before proceeding.");
-        return;
-    } else{
+    if (!firebaseUser && !manualUser) {
+      alert("You need to be logged in first before proceeding.");
+      return;
+    } else {
       navigate('/user/kiosk');
     }
+  };
 
-  }
   return (
     <div className="text-white w-full">
       <div className="bg-green-900 min-h-[40vh] flex items-center justify-center">

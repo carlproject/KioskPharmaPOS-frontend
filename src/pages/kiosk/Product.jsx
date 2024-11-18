@@ -1,6 +1,6 @@
 import { React, useState, useEffect } from 'react'
 import ViewProduct from '../../components/pos/ViewProduct'
-import { useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { db } from '../../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
@@ -8,14 +8,15 @@ import axios from 'axios';
 
 function Product() {
 
+  const navigate = useNavigate();
     const { productId } = useParams();
     const [product, setProduct] = useState(null);
   
     useEffect(() => {
       const fetchProduct = async () => {
         try {
-          const productRef = doc(db, 'products', productId); // Create a reference to the document
-          const productDoc = await getDoc(productRef); // Use getDoc to fetch the document
+          const productRef = doc(db, 'products', productId); 
+          const productDoc = await getDoc(productRef); 
           if (productDoc.exists()) {
             setProduct({ id: productDoc.id, ...productDoc.data() });
           } else {
@@ -30,15 +31,9 @@ function Product() {
     }, [productId]);
 
     const addToCart = async (product) => {
-        const auth = getAuth();
-        const user = auth.currentUser;
-    
-        if (!user) {
-            alert("You need to be logged in to add items to your cart.");
-            return;
-        }
-    
-        const userId = user.uid;
+      const firebaseUser = JSON.parse(localStorage.getItem('user'));
+  
+        const userId = firebaseUser.uid;
         
     
         const requestBody = {
@@ -58,7 +53,7 @@ function Product() {
             });
     
             if (response.data.success) {
-                alert(response.data.message); // Show success message
+                alert(response.data.message);
             } else {
                 console.error("Error adding to cart:", response.data.message);
                 alert(response.data.message);

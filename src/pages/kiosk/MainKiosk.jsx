@@ -38,6 +38,7 @@ function MainKiosk() {
         if (user?.uid) {
           await sendFCMTokenToBackend(user.uid, token);
           setIsPermissionGranted(true);
+          console.log("Success")
         } else {
           console.error('User is not authenticated');
         }

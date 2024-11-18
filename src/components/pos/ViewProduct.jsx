@@ -28,10 +28,19 @@ function ViewProduct({ product }) {
     };
 
     const SubmitToCart = async () => {
+        const auth = getAuth();
+        const firebaseUser = auth.currentUser; 
+        const manualUser = JSON.parse(localStorage.getItem('user'));
+    
+        const user = firebaseUser || manualUser;
+        
+        if (!user) {
+            alert("You need to be logged in first before proceeding.");
+            navigate('/login');
+            return;
+        }
+    
         try {
-            const auth = getAuth();
-            const user = auth.currentUser;
-
             const cartItem = {
                 productId: product.id,
                 userId: user.uid,
@@ -41,7 +50,7 @@ function ViewProduct({ product }) {
                 quantity: 1,
                 ...(selectedDosage && { dosage: selectedDosage }),
             };
-
+    
             const response = await axios.post('http://localhost:5000/user/kiosk/view-product/add', cartItem);
             toast.success(response.data);
         } catch (error) {
@@ -49,7 +58,7 @@ function ViewProduct({ product }) {
             toast.error(errorMessage);
         }
     };
-
+    
     return (
         <section className="min-h-screen flex justify-center items-center bg-gray-50 p-6">
             <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover draggable />

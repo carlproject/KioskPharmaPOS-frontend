@@ -6,17 +6,21 @@ import { getAuth, signOut } from 'firebase/auth';
 
 function Nav() {
 
-  const handLogout = async() => {
+  const handLogout = async () => {
     const auth = getAuth();
     try {
       await signOut(auth);
+      // Remove both 'user' and 'adminCredentials' from localStorage
       localStorage.removeItem('user');
-      setUser(null)
+      localStorage.removeItem('adminCredentials');
+      setUser(null);
       alert("User signed out successfully.");
     } catch (error) {
       console.log("Error signing out", error);
     }
-  }
+  };
+  
+
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
  const [dropdownOpen, setDropdownOpen] = useState(false);
   const toggleDropdown = () => {
