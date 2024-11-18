@@ -1,10 +1,17 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import logo from '../../assets/img/logo.png'
 import { useNavigate } from 'react-router-dom';
+import { differenceInDays } from 'date-fns';
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getMessaging, getToken } from 'firebase/messaging';
+import { toast } from 'react-toastify';
+import { db } from '../../config/firebase';
 
 const AdminPanel = ({ setActiveComponent, activeComponent }) => {
   
+  const messaging = getMessaging();
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("stocks");
   const navigate = useNavigate();
@@ -18,6 +25,84 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
   const toggleDropdown = () => {
     setIsDropdownOpen((prevState) => !prevState);
   };
+
+  const [productAlerts, setProductAlerts] = useState({
+    stocks: [],
+    orders: [],
+    expiry: [],
+  });
+
+  useEffect(() => {
+      const fetchProducts = async () => {
+        const productsCollection = collection(db, "products");
+        const snapshot = await getDocs(productsCollection);
+        const products = snapshot.docs.map((doc) => doc.data());
+      
+        const today = new Date();
+        const stocksAlerts = [];
+        const expiryAlerts = [];
+      
+        await Promise.all(
+          products.map(async (product) => {
+            if (product.stockLevel < 10) {
+              stocksAlerts.push(product.name);
+              await sendNotification(`Low Stock Alert: ${product.name} is running low.`);
+            }
+      
+            // Check if expirationDate is defined and is a valid Firestore Timestamp
+            if (product.expirationDate && product.expirationDate.toDate) {
+              const expiryDate = product.expirationDate.toDate();
+              const daysUntilExpiry = differenceInDays(expiryDate, today);
+      
+              if (daysUntilExpiry <= 14 && daysUntilExpiry >= 0) {
+                expiryAlerts.push(product.name);
+                await sendNotification(`Expiry Alert: ${product.name} is nearing expiry.`);
+              }
+            } else {
+              console.warn(`Expiration date is missing for product: ${product.name}`);
+            }
+          })
+        );
+      
+        console.log("Stocks Alerts:", stocksAlerts); // Debugging
+        console.log("Expiry Alerts:", expiryAlerts); // Debugging
+      
+        setProductAlerts({
+          stocks: stocksAlerts,
+          orders: [], // Placeholder for orders logic
+          expiry: expiryAlerts,
+        });
+      };
+    
+
+    fetchProducts();
+
+    const fetchTokenAndListen = async () => {
+      try {
+        const token = await getToken(messaging, { vapidKey: import.meta.env.VITE_VAPID_PUBLIC_KEY });
+
+        if (token) {
+          console.log("FCM Token:", token);
+        } else {
+          console.log("No FCM token found.");
+        }
+      } catch (error) {
+        console.error("Error fetching FCM token:", error);
+      }
+    };
+
+    fetchTokenAndListen();
+  }, []);
+
+  const sendNotification = (message) => {
+    toast.info(message, {
+      position: "top-right",
+      autoClose: 5000,
+    });
+
+    console.log("Notification sent:", message);
+  };
+
 
   return (
     <>
@@ -56,7 +141,7 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
               <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg">
                 <div className="flex justify-between border-b border-gray-200">
                   <button
-                    className={`w-1/2 py-2 text-center text-sm font-medium ${
+                    className={`w-1/3 py-2 text-center text-sm font-medium ${
                       activeTab === "stocks"
                         ? "text-green-500 border-b-2 border-green-500"
                         : "text-gray-600 hover:text-green-500"
@@ -66,7 +151,7 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
                     Stocks
                   </button>
                   <button
-                    className={`w-1/2 py-2 text-center text-sm font-medium ${
+                    className={`w-1/3 py-2 text-center text-sm font-medium ${
                       activeTab === "orders"
                         ? "text-green-500 border-b-2 border-green-500"
                         : "text-gray-600 hover:text-green-500"
@@ -75,43 +160,54 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
                   >
                     New Orders
                   </button>
+                  <button
+                    className={`w-1/3 py-2 text-center text-sm font-medium ${
+                      activeTab === "expiry"
+                        ? "text-green-500 border-b-2 border-green-500"
+                        : "text-gray-600 hover:text-green-500"
+                    }`}
+                    onClick={() => setActiveTab("expiry")}
+                  >
+                    Expiry
+                  </button>
                 </div>
 
                 <div className="p-4 space-y-3">
                   {activeTab === "stocks" ? (
                     <>
-                      <p className="text-sm text-gray-700">
-                        <span className="font-semibold text-green-500">
-                          Product A
-                        </span>{" "}
-                        is low in stock.
-                      </p>
-                      <p className="text-sm text-gray-700">
-                        <span className="font-semibold text-green-500">
-                          Product B
-                        </span>{" "}
-                        has been restocked.
-                      </p>
+                      {productAlerts.stocks.length > 0 ? (
+                        productAlerts.stocks.map((product, index) => (
+                          <p key={index} className="text-sm text-gray-700">
+                            <span className="font-semibold text-green-500">{product}</span> is low in stock.
+                          </p>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-700">All products are well-stocked.</p>
+                      )}
                     </>
-                  ) : (
+                  )  : activeTab === "orders" ? (
+                    <p className="text-sm text-gray-700">
+                      <span className="font-semibold text-green-500">Order #1234</span> has been
+                      placed.
+                    </p>
+                  ) : activeTab === "expiry" ? (
                     <>
-                      <p className="text-sm text-gray-700">
-                        <span className="font-semibold text-green-500">
-                          Order #1234
-                        </span>{" "}
-                        has been placed.
-                      </p>
-                      <p className="text-sm text-gray-700">
-                        <span className="font-semibold text-green-500">
-                          Order #1235
-                        </span>{" "}
-                        is ready for shipping.
-                      </p>
+                      {productAlerts.expiry.length > 0 ? (
+                        productAlerts.expiry.map((product, index) => (
+                          <p key={index} className="text-sm text-gray-700">
+                            <span className="font-semibold text-red-500">{product}</span> is nearing
+                            expiry.
+                          </p>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-700">No products nearing expiry.</p>
+                      )}
                     </>
-                  )}
+                  ) : null}
                 </div>
               </div>
             )}
+
           </div>
 
           <div className="relative">
