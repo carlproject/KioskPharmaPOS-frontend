@@ -15,8 +15,8 @@ function Analytics() {
     averageOrderValue: 0,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1)); // First day of the month
-  const [endDate, setEndDate] = useState(new Date()); // Today
+  const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [endDate, setEndDate] = useState(new Date()); 
 
   const fetchAndProcessData = async () => {
     try {
@@ -145,12 +145,10 @@ function Analytics() {
         {chartData && (
           <>
             <div className="mb-6 flex justify-evenly">
-              {/* Doughnut Chart */}
               <div className="w-64 h-64 mr-4">
                 <Doughnut data={chartData.pie} />
               </div>
 
-              {/* Line Chart */}
               <div className="w-92 h-92">
                 <Line data={chartData.line} />
               </div>
@@ -163,7 +161,6 @@ function Analytics() {
           </>
         )}
 
-        {/* Modal for Custom Date Range */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-96">
