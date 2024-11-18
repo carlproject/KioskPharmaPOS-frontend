@@ -56,7 +56,6 @@ function Analytics() {
 
     setSummaryData({ totalSales, totalQuantity, averageOrderValue });
   };
-
   const generateChartData = (transactions) => {
     const labels = transactions.map((tx) => tx.timestamp.toLocaleDateString());
     const salesByProduct = {};
