@@ -49,7 +49,6 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
               await sendNotification(`Low Stock Alert: ${product.name} is running low.`);
             }
       
-            // Check if expirationDate is defined and is a valid Firestore Timestamp
             if (product.expirationDate && product.expirationDate.toDate) {
               const expiryDate = product.expirationDate.toDate();
               const daysUntilExpiry = differenceInDays(expiryDate, today);
@@ -63,13 +62,17 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
             }
           })
         );
+
+        const ordersCollection = collection(db, "transactions");
+        const ordersSnapshot = await getDocs(ordersCollection);
+        const orders = ordersSnapshot.docs.map((doc) => doc.data());
       
-        console.log("Stocks Alerts:", stocksAlerts); // Debugging
-        console.log("Expiry Alerts:", expiryAlerts); // Debugging
+        console.log("Stocks Alerts:", stocksAlerts); 
+        console.log("Expiry Alerts:", expiryAlerts);
       
         setProductAlerts({
           stocks: stocksAlerts,
-          orders: [], // Placeholder for orders logic
+          orders: orders,
           expiry: expiryAlerts,
         });
       };
@@ -172,7 +175,7 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
                   </button>
                 </div>
 
-                <div className="p-4 space-y-3">
+                <div className="p-4 space-y-3 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 rounded-lg scrollbar-corner-rounded-lg">
                   {activeTab === "stocks" ? (
                     <>
                       {productAlerts.stocks.length > 0 ? (
@@ -185,28 +188,79 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
                         <p className="text-sm text-gray-700">All products are well-stocked.</p>
                       )}
                     </>
-                  )  : activeTab === "orders" ? (
-                    <p className="text-sm text-gray-700">
-                      <span className="font-semibold text-green-500">Order #1234</span> has been
-                      placed.
-                    </p>
-                  ) : activeTab === "expiry" ? (
-                    <>
-                      {productAlerts.expiry.length > 0 ? (
-                        productAlerts.expiry.map((product, index) => (
-                          <p key={index} className="text-sm text-gray-700">
-                            <span className="font-semibold text-red-500">{product}</span> is nearing
-                            expiry.
-                          </p>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-700">No products nearing expiry.</p>
-                      )}
-                    </>
+                  ) : activeTab === "orders" ? (
+                    productAlerts.orders.length > 0 ? (
+                      productAlerts.orders.map((order, index) => (
+                        <div
+                          key={index}
+                          className="bg-white p-4 mb-4 rounded-lg shadow-lg hover:shadow-2xl transition duration-300 ease-in-out"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-lg font-semibold text-gray-800">
+                                Order #{order.orderId}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                <span className="font-medium">Status:</span> {order.checkoutStatus}
+                              </p>
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              <p>
+                                <span className="font-medium">Total:</span> ${order.total}
+                              </p>
+                              <p>
+                                <span className="font-medium">Payment Method:</span> {order.paymentMethod}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mt-3">
+                            <p className="text-gray-600 text-sm font-medium">Ordered Items:</p>
+                            <div className="space-y-2">
+                              {order.items.map((item, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between p-2 bg-gray-100 rounded-md"
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <img
+                                      src={item.imageUrl}
+                                      alt={item.name}
+                                      className="w-12 h-12 object-cover rounded-md"
+                                    />
+                                    <div>
+                                      <p className="font-medium text-gray-800">{item.name}</p>
+                                      <p className="text-sm text-gray-500">Dosage: {item.dosage}</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-semibold text-gray-800">
+                                      x{item.quantity} - ${item.price * item.quantity}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex justify-between items-center">
+                            <button className="w-16 h-8 bg-blue-500 text-white text-sm font-semibold rounded-md hover:bg-blue-600 transition duration-200">
+                              View Details
+                            </button>
+                            <p className="text-sm text-gray-500">
+                              <span className="font-medium">Placed on:</span> {new Date(order.timestamp.seconds * 1000).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-700">No new orders.</p>
+                    )
                   ) : null}
                 </div>
               </div>
             )}
+
 
           </div>
 
