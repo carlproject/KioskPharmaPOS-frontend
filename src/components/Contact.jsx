@@ -27,7 +27,7 @@ function Contact() {
         position: 'top-right',
         autoClose: 3000,
       });
-      setFormData({ email: '', subject: '', message: '' }); // Reset the form
+      setFormData({ email: '', subject: '', message: '' });
     } catch (error) {
       toast.error('Failed to send message. Please try again later.', {
         position: 'top-right',
