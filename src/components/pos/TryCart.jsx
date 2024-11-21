@@ -13,7 +13,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 function TryCart() {
   const navigate = useNavigate();
-  const taxRate = 0.05
+  const taxRate = 0.12;
   const deliveryFee = 49;
   const discountRate = 0.10;
   const { userId } = useParams();
@@ -244,7 +244,7 @@ const onConfirmCheckout = async (paymentMethod) => {
       await clearUserCart(userId);
 
       setCheckoutStatus('success');
-      navigate('/user/kiosk/order-summary', { state: { orderId, transactionData } });
+      navigate('/user/kiosk/order-summary', { state: { orderId, transactionData, isNewOrder: true } });
     } catch (error) {
       console.error('Failed to save transaction:', error);
       setCheckoutStatus('failed');
@@ -259,6 +259,7 @@ const onConfirmCheckout = async (paymentMethod) => {
       return;
     }
     try {
+
       const orderId = `order-${Date.now()}`;
       
       const stripe = await stripePromise;
@@ -295,16 +296,6 @@ const onConfirmCheckout = async (paymentMethod) => {
       if (result.error) {
         console.error(result.error.message);
       } else {
-         const recipientToken = await getUserFCMToken(userId);
-          await fetch("http://localhost:5000/user/send-notification", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: "Transaction Confirmed",
-            body: "Your order has been successfully confirmed.",
-            recipientToken: recipientToken,
-          }),
-        });
         await clearUserCart(userId);
 
       }

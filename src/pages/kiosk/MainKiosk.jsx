@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function MainKiosk() {
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
+  
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
 
   useEffect(() => {

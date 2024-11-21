@@ -10,7 +10,6 @@ function Nav() {
     const auth = getAuth();
     try {
       await signOut(auth);
-      // Remove both 'user' and 'adminCredentials' from localStorage
       localStorage.removeItem('user');
       localStorage.removeItem('adminCredentials');
       setUser(null);

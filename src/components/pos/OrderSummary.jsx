@@ -1,9 +1,13 @@
-import { React, useState } from "react";
+import { React, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable"; 
 import { IoIosArrowRoundBack } from "react-icons/io";
 import logo from '../../assets/img/logo.png'
+import { format } from 'date-fns';
+import { doc, setDoc, getDoc, collection } from "firebase/firestore";
+import { db } from "../../config/firebase";
+
 
 function OrderSummary() {
     const location = useLocation();
@@ -14,7 +18,110 @@ function OrderSummary() {
     if (!transactionData) {
         return <p>Loading...</p>;
     }
+    
+const getAdminFCMTokens = async () => {
+    try {
+      const adminRef = doc(db, "admin", "checachio@gmail.com");
+      const adminDoc = await getDoc(adminRef);
+  
+      if (adminDoc.exists()) {
+        const data = adminDoc.data();
+        const fcmTokens = data.fcmTokens || [];
+        
+        if (fcmTokens.length > 0) {
+          return fcmTokens;
+        } else {
+          console.warn("No FCM tokens found for the admin.");
+          return null;
+        }
+      } else {
+        console.error("Admin document does not exist.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error retrieving admin FCM token:", error);
+      return null;
+    }
+  };
+  
+  const sendAdminNotification = async () => {
+    try {
+      const orderId = `order-${Date.now()}`;
+      const adminFCMTokens = await getAdminFCMTokens();
+      
+      if (adminFCMTokens && adminFCMTokens.length > 0) {
+        await fetch("http://localhost:5000/user/send-notification/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "New Order",
+            message: "A new order has been placed.",
+            orderId: orderId,
+            fcmTokens: adminFCMTokens,
+          }),
+        });
+      } else {
+        console.log("No FCM token found for the admin");
+      }
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  };
+  
+  
+  const getUserFCMToken = async (userId) => {
+    try {
+      const userRef = doc(db, "users", userId);
+      const userDoc = await getDoc(userRef);
+  
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const fcmToken = userData.fcmTokens || null;
+        return fcmToken;
+      } else {
+        console.log(`User document with ID ${userId} does not exist`);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error retrieving FCM token:', error);
+      return null;
+    }
+  };
+  
+  useEffect(() => {
+        const handleEWalletNotifications = async () => {
+            if (transactionData.isNewOrder && transactionData.paymentMethod === "E-wallet") {
+                try {
+                    const recipientToken = await getUserFCMToken(user.uid);
+                    await setDoc(doc(collection(db, 'transactions'), orderId), transactionData);
+                    console.log('Transaction saved successfully:', orderId);
 
+                    if (recipientToken) {
+                        await fetch("http://localhost:5000/user/send-notification", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                title: "Transaction Confirmed",
+                                body: "Your order has been successfully confirmed.",
+                                recipientToken,
+                            }),
+                        });
+                    } else {
+                        console.log("No valid recipient token found");
+                    }
+
+                    await sendAdminNotification();
+                } catch (error) {
+                    console.error("Error handling E-wallet notifications:", error);
+                }
+            }
+        };
+
+        handleEWalletNotifications();
+    }, [transactionData, orderId, user.uid]);
+
+
+    let displayDate = format(new Date(), 'MMMM do yyyy');
 
     const handleDownloadInvoice = () => {
         const doc = new jsPDF();
@@ -113,7 +220,7 @@ function OrderSummary() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 py-6 border-y border-gray-100 mb-6">
                     <div className="box group">
                         <p className="font-normal text-base leading-7 text-gray-500 mb-3 transition-all duration-500 group-hover:text-gray-700">Current Data</p>
-                        <h6 className="font-semibold font-manrope text-2xl leading-9 text-black">11-9-2024</h6>
+                        <h6 className="font-semibold font-manrope text-2xl leading-9 text-black">{displayDate}</h6>
                     </div>
                     <div className="box group">
                         <p className="font-normal text-base leading-7 text-gray-500 mb-3 transition-all duration-500 group-hover:text-gray-700">Order</p>

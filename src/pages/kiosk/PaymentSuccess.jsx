@@ -149,22 +149,11 @@ const getUserFCMToken = async (userId) => {
 
         await handlePurchaseAndUpdateStock(transactionData.userId);
 
-        const recipientToken = await getUserFCMToken(userId);
-          await fetch("http://localhost:5000/user/send-notification", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: "Transaction Confirmed",
-            body: "Your order has been successfully confirmed.",
-            recipientToken: recipientToken,
-          }),
-        });
 
         await sendAdminNotification();
 
         await updateDoc(orderRef, { checkoutStatus: "processing" });
-
-        navigate("/user/kiosk/order-summary", { state: { orderId, transactionData } });
+        navigate("/user/kiosk/order-summary", { state: { orderId, transactionData: { ...transactionData, isNewOrder: true }} });
       } catch (error) {
         console.error("Error processing order:", error);
       }

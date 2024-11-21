@@ -44,7 +44,7 @@ function PrescriptionHistory() {
 
     const handleViewDetails = (transaction) => {
         navigate("/user/kiosk/order-summary", {
-            state: { orderId: transaction.id, transactionData: transaction },
+            state: { orderId: transaction.id, transactionData: { ...transaction, isNewOrder: false },  },
         });
     };
 

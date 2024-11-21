@@ -46,9 +46,8 @@ function RegisterPage() {
       const hashedPassword = await bcrypt.hash(formData.password, 10);
       // Create user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user; // This is the newly created user
+      const user = userCredential.user;
 
-      // Save user details to Firestore
       await addDoc(collection(db, 'users'), {
         uid: user.uid, // Save the user's UID from Firebase Auth
         FirstName: formData.firstName,
