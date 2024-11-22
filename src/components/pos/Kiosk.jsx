@@ -28,6 +28,7 @@ const Kiosk = () => {
   const [cartCount, setCartCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [totalCartItems, setTotalCartItems] = useState(0);
   const [prescriptionFile, setPrescriptionFile] = useState(null);
 
   const fetchProducts = async (category, isPrescription = false) => {
@@ -98,6 +99,13 @@ const Kiosk = () => {
         setCartCount(cartSnapshot.docs.length);
       }
     };
+
+    const fetchTotalItems = async () => {
+      const total = await calculateTotalItems();
+      setTotalCartItems(total);
+    };
+  
+    fetchTotalItems();
     fetchCartCount();
   }, []);
 
@@ -123,7 +131,19 @@ const Kiosk = () => {
     navigate(`/user/kiosk/cart/${user.uid}`);
   };
 
-
+  async function calculateTotalItems() {
+    const transactionsRef = collection(db, "transactions");
+    const querySnapshot = await getDocs(transactionsRef);
+  
+    let totalItems = 0;
+  
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      totalItems += data.items.reduce((sum, item) => sum + item.quantity, 0);
+    });
+  
+    return totalItems;
+  }
 
   const handleProductClick = (productId) => {
     if (selectedCategory === "Prescription Medication" && !isAuthenticated) {
@@ -172,11 +192,9 @@ const Kiosk = () => {
           <div className="flex items-center space-x-4">
             <button onClick={viewCart} className="relative">
               <AiOutlineShoppingCart className="text-3xl text-green-700" />
-              {cartCount > 0 && (
-                <span className="absolute top-0 right-0 bg-red-600 text-white rounded-full text-xs px-2 py-0.5">
-                  {cartCount}
-                </span>
-              )}
+              <span className="absolute top-0 right-0 bg-red-600 text-white rounded-full text-xs px-2 py-0.5">
+              {totalCartItems}
+            </span>
             </button>
             {selectedCategory === "Prescription Medication" && (
               <div className="flex items-center space-x-2">

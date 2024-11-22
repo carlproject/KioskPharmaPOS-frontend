@@ -5,6 +5,8 @@ import { Bar, Doughnut, Line } from "react-chartjs-2";
 import "chart.js/auto";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function Analytics() {
   const [salesData, setSalesData] = useState([]);
@@ -15,9 +17,12 @@ function Analytics() {
     averageOrderValue: 0,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [endDate, setEndDate] = useState(new Date()); 
+  const [startDate, setStartDate] = useState(
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  );
+  const [endDate, setEndDate] = useState(new Date());
 
+  // Fetch and process data from Firestore
   const fetchAndProcessData = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "transactions"));
@@ -45,6 +50,7 @@ function Analytics() {
     fetchAndProcessData();
   }, [startDate, endDate]);
 
+  // Summary Calculation
   const calculateSummary = (transactions) => {
     const totalSales = transactions.reduce((sum, tx) => sum + (tx.total || 0), 0);
     const totalQuantity = transactions.reduce(
@@ -56,6 +62,8 @@ function Analytics() {
 
     setSummaryData({ totalSales, totalQuantity, averageOrderValue });
   };
+
+  // Chart Data Preparation
   const generateChartData = (transactions) => {
     const labels = transactions.map((tx) => tx.timestamp.toLocaleDateString());
     const salesByProduct = {};
@@ -106,6 +114,35 @@ function Analytics() {
     });
   };
 
+  // Report Generation
+  const exportToExcel = () => {
+    const data = salesData.map((tx) => ({
+      OrderID: tx.orderId,
+      UserID: tx.userId,
+      PaymentMethod: tx.paymentMethod,
+      Total: tx.total.toFixed(2),
+      Tax: tx.tax.toFixed(2),
+      Discount: tx.discountAmount.toFixed(2),
+      CheckoutStatus: tx.checkoutStatus,
+      Timestamp: tx.timestamp.toLocaleString(),
+      Items: tx.items
+        ? tx.items
+            .map(
+              (item) =>
+                `${item.name} (Qty: ${item.quantity}, Price: ${item.price}, Dosage: ${item.dosage})`
+            )
+            .join("; ")
+        : "No Items",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([excelBuffer]), `Transactions_Report_${startDate.toLocaleDateString()}-${endDate.toLocaleDateString()}.xlsx`);
+  };
+
   return (
     <div className="p-6 sm:ml-64">
       <div className="p-6 border-2 border-gray-200 border-dashed rounded-lg shadow-lg mt-14 bg-gray-100">
@@ -118,14 +155,23 @@ function Analytics() {
               {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
             </p>
           </div>
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Customize Date Range
-          </button>
+          <div className="flex space-x-4">
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Customize Date Range
+            </button>
+            <button
+              className="px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600"
+              onClick={exportToExcel}
+            >
+              Export to Excel
+            </button>
+          </div>
         </div>
 
+        {/* Summary */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <div className="bg-blue-500 text-white p-4 rounded-lg shadow-lg">
             <h2 className="text-xl font-semibold">Total Sales</h2>
@@ -141,6 +187,7 @@ function Analytics() {
           </div>
         </div>
 
+        {/* Charts */}
         {chartData && (
           <>
             <div className="mb-6 flex justify-evenly">
@@ -160,6 +207,7 @@ function Analytics() {
           </>
         )}
 
+        {/* Date Range Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-96">
@@ -169,7 +217,8 @@ function Analytics() {
                 <DatePicker
                   selected={startDate}
                   onChange={(date) => setStartDate(date)}
-                  className="mt-2 p-2 border rounded-lg w-full"
+                  dateFormat="yyyy-MM-dd"
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="mb-4">
@@ -177,18 +226,19 @@ function Analytics() {
                 <DatePicker
                   selected={endDate}
                   onChange={(date) => setEndDate(date)}
-                  className="mt-2 p-2 border rounded-lg w-full"
+                  dateFormat="yyyy-MM-dd"
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 />
               </div>
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-end">
                 <button
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg"
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg shadow-lg hover:bg-gray-600 mr-2"
                   onClick={() => setIsModalOpen(false)}
                 >
-                  Cancel
+                  Close
                 </button>
                 <button
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600"
                   onClick={() => {
                     setIsModalOpen(false);
                     fetchAndProcessData();
