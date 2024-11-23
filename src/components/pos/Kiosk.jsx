@@ -6,8 +6,10 @@ import { AiOutlineMedicineBox, AiOutlineSafety, AiOutlineUser, AiOutlineShopping
 import { RiFirstAidKitFill } from 'react-icons/ri';
 import { getAuth } from "firebase/auth";
 import { MdMedicalInformation, MdOutlineMedication } from "react-icons/md";
+import { FaSearch } from "react-icons/fa";
 import { RxHamburgerMenu } from "react-icons/rx";
 import axios from 'axios';
+import { AiFillForward } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 
 const categories = [
@@ -56,33 +58,7 @@ const Kiosk = () => {
     }
   };
 
-  const verifyPrescription = async () => {
-    if (!prescriptionFile) {
-      alert("Please upload a prescription file.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("prescription", prescriptionFile);
-
-    try {
-      const response = await axios.post('/api/authenticate-prescription', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
-
-      if (response.data.isValid) {
-        setIsAuthenticated(true);
-        alert("Prescription authenticated successfully!");
-      } else {
-        alert("Invalid prescription.");
-      }
-    } catch (error) {
-      console.error("Error authenticating prescription:", error);
-      alert("Failed to authenticate prescription.");
-    }
-  };
+  
 
   useEffect(() => {
     fetchProducts(selectedCategory, selectedCategory === "Prescription Medication");
@@ -161,7 +137,7 @@ const Kiosk = () => {
     <div className="flex h-screen bg-gray-100">
       <aside className={`transition-all duration-500 ease-in-out ${isSidebarOpen ? "w-72" : "w-16"} bg-green-800 text-white p-4`}>
         <button onClick={toggleSidebar} className="text-white mb-6 focus:outline-none">
-          {isSidebarOpen ? <RxHamburgerMenu /> : ">>"}
+          {isSidebarOpen ? <RxHamburgerMenu /> : <AiFillForward />}
         </button>
         {isSidebarOpen && <h2 className="text-2xl font-semibold mb-6">Categories</h2>}
         <ul className="space-y-4">
@@ -182,12 +158,16 @@ const Kiosk = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-4">
             <h2 className="text-3xl font-bold text-gray-800">{selectedCategory}</h2>
+            <div className="relative flex items-center w-full sm:w-80">
+            <FaSearch className="absolute left-3 text-gray-400 text-lg" />
             <input
               type="text"
               placeholder="Search product..."
               onChange={handleSearchChange}
-              className="border border-gray-300 rounded-md p-2 focus:outline-none focus:border-green-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
             />
+          </div>
+
           </div>
           <div className="flex items-center space-x-4">
             <button onClick={viewCart} className="relative">

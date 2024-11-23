@@ -94,8 +94,6 @@ function AdminSide() {
         return <Analytics />;
       case 'Notifications And Messages':
         return <Notifications />;
-      case 'Prescription Management':
-        return <PrescriptionManagement />;
       default:
         return <AddProduct />;
     }
