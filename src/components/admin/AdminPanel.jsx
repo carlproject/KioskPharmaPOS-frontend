@@ -48,16 +48,21 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
               stocksAlerts.push(product.name);
               await sendNotification(`Low Stock Alert: ${product.name} is running low.`);
             }
+            
       
             if (product.expirationDate && product.expirationDate.toDate) {
               const expiryDate = product.expirationDate.toDate();
               const daysUntilExpiry = differenceInDays(expiryDate, today);
-      
+            
               if (daysUntilExpiry <= 14 && daysUntilExpiry >= 0) {
-                expiryAlerts.push(product.name);
+                expiryAlerts.push({
+                  name: product.name,
+                  expiryDate: expiryDate,
+                });
                 await sendNotification(`Expiry Alert: ${product.name} is nearing expiry.`);
               }
-            } else {
+            }
+             else {
               console.warn(`Expiration date is missing for product: ${product.name}`);
             }
           })
@@ -141,122 +146,147 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
             </button>
 
             {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg">
-              <div className="flex justify-between border-b border-gray-200">
-                <button
-                  className={`w-1/3 py-2 text-center text-sm font-medium ${
-                    activeTab === "stocks"
-                      ? "text-green-500 border-b-2 border-green-500"
-                      : "text-gray-600 hover:text-green-500"
-                  }`}
-                  onClick={() => setActiveTab("stocks")}
-                >
-                  Stocks
-                </button>
-                <button
-                  className={`w-1/3 py-2 text-center text-sm font-medium ${
-                    activeTab === "orders"
-                      ? "text-green-500 border-b-2 border-green-500"
-                      : "text-gray-600 hover:text-green-500"
-                  }`}
-                  onClick={() => setActiveTab("orders")}
-                >
-                  New Orders
-                </button>
-                <button
-                  className={`w-1/3 py-2 text-center text-sm font-medium ${
-                    activeTab === "expiry"
-                      ? "text-green-500 border-b-2 border-green-500"
-                      : "text-gray-600 hover:text-green-500"
-                  }`}
-                  onClick={() => setActiveTab("expiry")}
-                >
-                  Expiry
-                </button>
-              </div>
+              <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg">
+                <div className="flex justify-between border-b border-gray-200">
+                  <button
+                    className={`w-1/3 py-2 text-center text-sm font-medium ${
+                      activeTab === "stocks"
+                        ? "text-green-500 border-b-2 border-green-500"
+                        : "text-gray-600 hover:text-green-500"
+                    }`}
+                    onClick={() => setActiveTab("stocks")}
+                  >
+                    Stocks
+                  </button>
+                  <button
+                    className={`w-1/3 py-2 text-center text-sm font-medium ${
+                      activeTab === "orders"
+                        ? "text-green-500 border-b-2 border-green-500"
+                        : "text-gray-600 hover:text-green-500"
+                    }`}
+                    onClick={() => setActiveTab("orders")}
+                  >
+                    New Orders
+                  </button>
+                  <button
+                    className={`w-1/3 py-2 text-center text-sm font-medium ${
+                      activeTab === "expiry"
+                        ? "text-green-500 border-b-2 border-green-500"
+                        : "text-gray-600 hover:text-green-500"
+                    }`}
+                    onClick={() => setActiveTab("expiry")}
+                  >
+                    Expiry
+                  </button>
+                </div>
 
-              <div className="p-4 space-y-3 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-100 rounded-lg">
-                {activeTab === "stocks" ? (
-                  <>
-                    {productAlerts.stocks.length > 0 ? (
-                      productAlerts.stocks.map((product, index) => (
+                <div className="p-4 space-y-3 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-100 rounded-lg">
+                  {activeTab === "stocks" ? (
+                    <>
+                      {productAlerts.stocks.length > 0 ? (
+                        productAlerts.stocks.map((product, index) => (
+                          <p key={index} className="text-sm text-gray-700">
+                            <span className="font-semibold text-green-500">{product}</span> is low in stock.
+                          </p>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-700">All products are well-stocked.</p>
+                      )}
+                    </>
+                  ) : activeTab === "orders" ? (
+                    productAlerts.orders.length > 0 ? (
+                      productAlerts.orders.map((order, index) => (
+                        <div
+                          key={index}
+                          className="bg-white p-4 mb-4 rounded-lg shadow-lg hover:shadow-2xl transition duration-300 ease-in-out"
+                        >
+                          {
+                             productAlerts.orders.length > 0 ? (
+                              productAlerts.orders.map((order, index) => (
+                                <div
+                                  key={index}
+                                  className="bg-white p-4 mb-4 rounded-lg shadow-lg hover:shadow-2xl transition duration-300 ease-in-out"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <p className="text-lg font-semibold text-gray-800">
+                                        Order #{order.orderId}
+                                      </p>
+                                      <p className="text-sm text-gray-500">
+                                        <span className="font-medium">Status:</span> {order.checkoutStatus}
+                                      </p>
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                      <p>
+                                        <span className="font-medium">Total:</span> ${order.total}
+                                      </p>
+                                      <p>
+                                        <span className="font-medium">Payment Method:</span> {order.paymentMethod}
+                                      </p>
+                                    </div>
+                                  </div>
+          
+                                  <div className="mt-3">
+                                    <p className="text-gray-600 text-sm font-medium">Ordered Items:</p>
+                                    <div className="space-y-2">
+                                      {order.items.map((item, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="flex items-center justify-between p-2 bg-gray-100 rounded-md"
+                                        >
+                                          <div className="flex items-center space-x-2">
+                                            <img
+                                              src={item.imageUrl}
+                                              alt={item.name}
+                                              className="w-12 h-12 object-cover rounded-md"
+                                            />
+                                            <div>
+                                              <p className="font-medium text-gray-800">{item.name}</p>
+                                              <p className="text-sm text-gray-500">Dosage: {item.dosage}</p>
+                                            </div>
+                                          </div>
+                                          <div className="text-right">
+                                            <p className="font-semibold text-gray-800">
+                                              x{item.quantity} - ${item.price * item.quantity}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+          
+                                  <div className="mt-4 flex justify-between items-center">
+                                    <p className="text-sm text-gray-500">
+                                      <span className="font-medium">Placed on:</span> {new Date(order.timestamp.seconds * 1000).toLocaleString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-700">No new orders.</p>
+                            )
+                          }
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-700">No new orders.</p>
+                    )
+                  ) : activeTab === "expiry" ? (
+                    productAlerts.expiry.length > 0 ? (
+                      productAlerts.expiry.map((product, index) => (
                         <p key={index} className="text-sm text-gray-700">
-                          <span className="font-semibold text-green-500">{product}</span> is low in stock.
+                          <span className="font-semibold text-yellow-500">{product.name}</span> is nearing expiry on{" "}
+                          {product.expiryDate.toLocaleDateString()}.
                         </p>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-700">All products are well-stocked.</p>
-                    )}
-                  </>
-                ) : activeTab === "orders" ? (
-                  productAlerts.orders.length > 0 ? (
-                    productAlerts.orders.map((order, index) => (
-                      <div
-                        key={index}
-                        className="bg-white p-4 mb-4 rounded-lg shadow-lg hover:shadow-2xl transition duration-300 ease-in-out"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-lg font-semibold text-gray-800">
-                              Order #{order.orderId}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              <span className="font-medium">Status:</span> {order.checkoutStatus}
-                            </p>
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            <p>
-                              <span className="font-medium">Total:</span> ${order.total}
-                            </p>
-                            <p>
-                              <span className="font-medium">Payment Method:</span> {order.paymentMethod}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-3">
-                          <p className="text-gray-600 text-sm font-medium">Ordered Items:</p>
-                          <div className="space-y-2">
-                            {order.items.map((item, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center justify-between p-2 bg-gray-100 rounded-md"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <img
-                                    src={item.imageUrl}
-                                    alt={item.name}
-                                    className="w-12 h-12 object-cover rounded-md"
-                                  />
-                                  <div>
-                                    <p className="font-medium text-gray-800">{item.name}</p>
-                                    <p className="text-sm text-gray-500">Dosage: {item.dosage}</p>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <p className="font-semibold text-gray-800">
-                                    x{item.quantity} - ${item.price * item.quantity}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex justify-between items-center">
-                          <p className="text-sm text-gray-500">
-                            <span className="font-medium">Placed on:</span> {new Date(order.timestamp.seconds * 1000).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-700">No new orders.</p>
-                  )
-                ) : null}
+                      <p className="text-sm text-gray-700">No products are nearing expiry.</p>
+                    )
+                  ) : null}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
 
 
 
@@ -314,7 +344,7 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
         aria-label="Sidebar"
       >
         <div className="h-full px-3 pb-4 overflow-y-auto bg-blue-950 shadow-lg">
-          <ul className="space-y-2 font-medium">
+          <ul className="space-y-4 font-medium">
             <li>
               <button onClick={() => setActiveComponent('Dashboard')}
                className={`flex w-full items-center p-2 text-gray-900 rounded-lg dark:text-white ${activeComponent === 'Dashboard' ? 'bg-green-700' : ''} dark:hover:bg-gray-700 group`}
@@ -374,7 +404,7 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
             <li>
               <button
               onClick={() => setActiveComponent('Notifications And Messages')}
-              className={`flex w-full mt-[360px] items-center p-2 text-gray-900 rounded-lg dark:text-white ${activeComponent === 'Notifications And Messages' ? 'bg-green-700' : ''} dark:hover:bg-gray-700 group`}
+              className={`flex w-full mt-[329px] items-center p-2 text-gray-900 rounded-lg dark:text-white ${activeComponent === 'Notifications And Messages' ? 'bg-green-700' : ''} dark:hover:bg-gray-700 group`}
               >
                 <svg
               aria-hidden="true"

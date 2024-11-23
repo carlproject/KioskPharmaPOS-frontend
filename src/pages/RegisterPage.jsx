@@ -44,21 +44,19 @@ function RegisterPage() {
 
     try {
       const hashedPassword = await bcrypt.hash(formData.password, 10);
-      // Create user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
       await addDoc(collection(db, 'users'), {
-        uid: user.uid, // Save the user's UID from Firebase Auth
+        uid: user.uid,
         FirstName: formData.firstName,
         LastName: formData.lastName,
         email: formData.email,
-        password: hashedPassword // Not recommended
+        password: hashedPassword 
       });
 
       setIsSuccessModalOpen(true);
       
-      // Redirect after a brief delay
       setTimeout(() => {
         navigate('/login');
       }, 2000);

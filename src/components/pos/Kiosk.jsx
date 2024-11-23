@@ -172,9 +172,6 @@ const Kiosk = () => {
           <div className="flex items-center space-x-4">
             <button onClick={viewCart} className="relative">
               <AiOutlineShoppingCart className="text-3xl text-green-700" />
-              <span className="absolute top-0 right-0 bg-red-600 text-white rounded-full text-xs px-2 py-0.5">
-              {totalCartItems}
-            </span>
             </button>
             {selectedCategory === "Prescription Medication" && (
               <div className="flex items-center space-x-2">

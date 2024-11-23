@@ -14,7 +14,7 @@ function Notifications() {
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'transactions'), (snapshot) => {
       snapshot.docChanges().forEach((change) => {
-        const orderData = { id: change.doc.id, ...change.doc.data() };
+        const orderData = { id: change.doc.id, ...change.doc.data(), expanded: false }; 
         setOrders((prevOrders) => {
           const updatedOrders = [...prevOrders];
           const existingIndex = updatedOrders.findIndex((order) => order.id === orderData.id);
@@ -24,6 +24,7 @@ function Notifications() {
         });
       });
     });
+    
   }, []);
 
   const updateOrderStatus = async (orderId) => {
