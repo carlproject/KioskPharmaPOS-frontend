@@ -122,7 +122,7 @@ const getAdminFCMTokens = async () => {
 
 
     let displayDate = format(new Date(), 'MMMM do yyyy');
-
+    let pesoSign = '₱';
     const handleDownloadInvoice = () => {
         const doc = new jsPDF();
         
@@ -172,7 +172,7 @@ const getAdminFCMTokens = async () => {
                 fontStyle: "bold"
             },
             styles: { cellPadding: 4, fontSize: 10 },
-            columnStyles: { 4: { halign: "right" } }
+            columnStyles: { 4: { halign: "left" } }
         });
 
         let finalY = doc.previousAutoTable.finalY + 10;
@@ -185,7 +185,7 @@ const getAdminFCMTokens = async () => {
         const totalTax = transactionData.tax || 0;
         const totalAmount = (transactionData.total - transactionData.discountAmount) + transactionData.tax;
 
-        doc.text(`Subtotal: ₱${subtotal.toFixed(2)}`, 10, finalY);
+        doc.text(`Subtotal: ${pesoSign}${subtotal.toFixed(2)}`, 10, finalY);
         doc.text(`Discount: ₱${totalDiscount.toFixed(2)}`, 10, finalY + 10);
         doc.text(`Taxes: ₱${totalTax.toFixed(2)}`, 10, finalY + 20);
 

@@ -27,6 +27,7 @@
     "loadash": "^1.0.0",
     "lodash": "^4.17.21",
     "opencv.js": "^1.2.1",
+    "pdfmake": "^0.2.15",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-datepicker": "^7.5.0",
@@ -39,6 +40,7 @@
     "redux": "^5.0.1",
     "shadcn-ui": "^0.2.3",
     "swiper": "^11.1.14",
+    "tailwind-scrollbar": "^3.1.0",
     "tesseract.js": "^5.1.1",
     "xlsx": "^0.18.5"
   },

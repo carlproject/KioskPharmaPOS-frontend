@@ -141,125 +141,123 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg">
-                <div className="flex justify-between border-b border-gray-200">
-                  <button
-                    className={`w-1/3 py-2 text-center text-sm font-medium ${
-                      activeTab === "stocks"
-                        ? "text-green-500 border-b-2 border-green-500"
-                        : "text-gray-600 hover:text-green-500"
-                    }`}
-                    onClick={() => setActiveTab("stocks")}
-                  >
-                    Stocks
-                  </button>
-                  <button
-                    className={`w-1/3 py-2 text-center text-sm font-medium ${
-                      activeTab === "orders"
-                        ? "text-green-500 border-b-2 border-green-500"
-                        : "text-gray-600 hover:text-green-500"
-                    }`}
-                    onClick={() => setActiveTab("orders")}
-                  >
-                    New Orders
-                  </button>
-                  <button
-                    className={`w-1/3 py-2 text-center text-sm font-medium ${
-                      activeTab === "expiry"
-                        ? "text-green-500 border-b-2 border-green-500"
-                        : "text-gray-600 hover:text-green-500"
-                    }`}
-                    onClick={() => setActiveTab("expiry")}
-                  >
-                    Expiry
-                  </button>
-                </div>
+            <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg">
+              <div className="flex justify-between border-b border-gray-200">
+                <button
+                  className={`w-1/3 py-2 text-center text-sm font-medium ${
+                    activeTab === "stocks"
+                      ? "text-green-500 border-b-2 border-green-500"
+                      : "text-gray-600 hover:text-green-500"
+                  }`}
+                  onClick={() => setActiveTab("stocks")}
+                >
+                  Stocks
+                </button>
+                <button
+                  className={`w-1/3 py-2 text-center text-sm font-medium ${
+                    activeTab === "orders"
+                      ? "text-green-500 border-b-2 border-green-500"
+                      : "text-gray-600 hover:text-green-500"
+                  }`}
+                  onClick={() => setActiveTab("orders")}
+                >
+                  New Orders
+                </button>
+                <button
+                  className={`w-1/3 py-2 text-center text-sm font-medium ${
+                    activeTab === "expiry"
+                      ? "text-green-500 border-b-2 border-green-500"
+                      : "text-gray-600 hover:text-green-500"
+                  }`}
+                  onClick={() => setActiveTab("expiry")}
+                >
+                  Expiry
+                </button>
+              </div>
 
-                <div className="p-4 space-y-3 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 rounded-lg scrollbar-corner-rounded-lg">
-                  {activeTab === "stocks" ? (
-                    <>
-                      {productAlerts.stocks.length > 0 ? (
-                        productAlerts.stocks.map((product, index) => (
-                          <p key={index} className="text-sm text-gray-700">
-                            <span className="font-semibold text-green-500">{product}</span> is low in stock.
-                          </p>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-700">All products are well-stocked.</p>
-                      )}
-                    </>
-                  ) : activeTab === "orders" ? (
-                    productAlerts.orders.length > 0 ? (
-                      productAlerts.orders.map((order, index) => (
-                        <div
-                          key={index}
-                          className="bg-white p-4 mb-4 rounded-lg shadow-lg hover:shadow-2xl transition duration-300 ease-in-out"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-lg font-semibold text-gray-800">
-                                Order #{order.orderId}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                <span className="font-medium">Status:</span> {order.checkoutStatus}
-                              </p>
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              <p>
-                                <span className="font-medium">Total:</span> ${order.total}
-                              </p>
-                              <p>
-                                <span className="font-medium">Payment Method:</span> {order.paymentMethod}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="mt-3">
-                            <p className="text-gray-600 text-sm font-medium">Ordered Items:</p>
-                            <div className="space-y-2">
-                              {order.items.map((item, idx) => (
-                                <div
-                                  key={idx}
-                                  className="flex items-center justify-between p-2 bg-gray-100 rounded-md"
-                                >
-                                  <div className="flex items-center space-x-2">
-                                    <img
-                                      src={item.imageUrl}
-                                      alt={item.name}
-                                      className="w-12 h-12 object-cover rounded-md"
-                                    />
-                                    <div>
-                                      <p className="font-medium text-gray-800">{item.name}</p>
-                                      <p className="text-sm text-gray-500">Dosage: {item.dosage}</p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="font-semibold text-gray-800">
-                                      x{item.quantity} - ${item.price * item.quantity}
-                                    </p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="mt-4 flex justify-between items-center">
-                            <button className="w-16 h-8 bg-blue-500 text-white text-sm font-semibold rounded-md hover:bg-blue-600 transition duration-200">
-                              View Details
-                            </button>
+              <div className="p-4 space-y-3 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-100 rounded-lg">
+                {activeTab === "stocks" ? (
+                  <>
+                    {productAlerts.stocks.length > 0 ? (
+                      productAlerts.stocks.map((product, index) => (
+                        <p key={index} className="text-sm text-gray-700">
+                          <span className="font-semibold text-green-500">{product}</span> is low in stock.
+                        </p>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-700">All products are well-stocked.</p>
+                    )}
+                  </>
+                ) : activeTab === "orders" ? (
+                  productAlerts.orders.length > 0 ? (
+                    productAlerts.orders.map((order, index) => (
+                      <div
+                        key={index}
+                        className="bg-white p-4 mb-4 rounded-lg shadow-lg hover:shadow-2xl transition duration-300 ease-in-out"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-lg font-semibold text-gray-800">
+                              Order #{order.orderId}
+                            </p>
                             <p className="text-sm text-gray-500">
-                              <span className="font-medium">Placed on:</span> {new Date(order.timestamp.seconds * 1000).toLocaleString()}
+                              <span className="font-medium">Status:</span> {order.checkoutStatus}
+                            </p>
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            <p>
+                              <span className="font-medium">Total:</span> ${order.total}
+                            </p>
+                            <p>
+                              <span className="font-medium">Payment Method:</span> {order.paymentMethod}
                             </p>
                           </div>
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-700">No new orders.</p>
-                    )
-                  ) : null}
-                </div>
+
+                        <div className="mt-3">
+                          <p className="text-gray-600 text-sm font-medium">Ordered Items:</p>
+                          <div className="space-y-2">
+                            {order.items.map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between p-2 bg-gray-100 rounded-md"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <img
+                                    src={item.imageUrl}
+                                    alt={item.name}
+                                    className="w-12 h-12 object-cover rounded-md"
+                                  />
+                                  <div>
+                                    <p className="font-medium text-gray-800">{item.name}</p>
+                                    <p className="text-sm text-gray-500">Dosage: {item.dosage}</p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-semibold text-gray-800">
+                                    x{item.quantity} - ${item.price * item.quantity}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex justify-between items-center">
+                          <p className="text-sm text-gray-500">
+                            <span className="font-medium">Placed on:</span> {new Date(order.timestamp.seconds * 1000).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-700">No new orders.</p>
+                  )
+                ) : null}
               </div>
-            )}
+            </div>
+          )}
+
 
 
           </div>

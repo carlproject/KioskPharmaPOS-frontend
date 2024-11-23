@@ -53,6 +53,7 @@ function ViewProduct({ product }) {
     
             const response = await axios.post('http://localhost:5000/user/kiosk/view-product/add', cartItem);
             toast.success(response.data);
+            setStockLevel((prevStockLevel) => prevStockLevel - 1);
         } catch (error) {
             const errorMessage = error.response?.data || 'Failed to add item to cart';
             toast.error(errorMessage);
