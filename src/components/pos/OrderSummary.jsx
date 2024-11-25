@@ -183,7 +183,6 @@ const getAdminFCMTokens = async () => {
         const subtotal = transactionData.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
         const totalDiscount = transactionData.discountAmount || 0;
         const totalTax = transactionData.tax || 0;
-        const totalAmount = (transactionData.total - transactionData.discountAmount) + transactionData.tax;
 
         doc.text(`Subtotal: ${pesoSign}${subtotal.toFixed(2)}`, 10, finalY);
         doc.text(`Discount: ₱${totalDiscount.toFixed(2)}`, 10, finalY + 10);
@@ -192,7 +191,7 @@ const getAdminFCMTokens = async () => {
         doc.setTextColor(primaryColor);
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text(`Total: ₱${totalAmount.toFixed(2)}`, 10, finalY + 35);
+        doc.text(`Total: ₱${transactionData.total.toFixed(2)}`, 10, finalY + 35);
 
         doc.setTextColor(secondaryColor);
         doc.setFontSize(10);
@@ -256,7 +255,7 @@ const getAdminFCMTokens = async () => {
                     <div className="w-full">
                         <div className="flex items-center justify-between mb-6">
                             <p className="font-normal text-xl leading-8 text-gray-500">Subtotal</p>
-                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{(transactionData.total).toFixed(2) }</p>
+                            <p className="font-semibold text-xl leading-8 text-gray-900">₱{transactionData.subTotal }</p>
                         </div>
                         <div className="flex items-center justify-between mb-6">
                             <p className="font-normal text-xl leading-8 text-red-500">Savings</p>
@@ -268,7 +267,7 @@ const getAdminFCMTokens = async () => {
                         </div>
                         <div className="flex items-center justify-between border-t border-gray-100 pt-6">
                             <p className="font-semibold text-2xl leading-9 text-black">Total</p>
-                            <p className="font-semibold text-2xl leading-9 text-black">₱{((transactionData.total - transactionData.discountAmount) + transactionData.tax).toFixed(2)}</p>
+                            <p className="font-semibold text-2xl leading-9 text-black">₱{((transactionData.total.toFixed(2) ))}</p>
                         </div>
                     </div>
                 </div>

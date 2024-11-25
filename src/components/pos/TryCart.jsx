@@ -213,14 +213,15 @@ const onConfirmCheckout = async (paymentMethod) => {
       tax,
       discountAmount,
       items: cartItems,
-      total: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
+      subTotal: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
+      total: total,
       timestamp: serverTimestamp(),
       checkoutStatus: 'processing',
     };
 
     try {
       const recipientToken = await getUserFCMToken(userId);
-        alert(recipientToken);
+      alert(recipientToken);
       await setDoc(doc(collection(db, 'transactions'), orderId), transactionData);
       console.log('Transaction saved successfully:', orderId);
 
@@ -273,6 +274,7 @@ const onConfirmCheckout = async (paymentMethod) => {
           paymentMethod,
           tax,
           discountAmount,
+          subTotal: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
           items: cartItems.map((item) => ({
             productId: item.productId,
             name: item.name,

@@ -9,6 +9,7 @@ import { MdMedicalInformation, MdOutlineMedication } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
 import { RxHamburgerMenu } from "react-icons/rx";
 import axios from 'axios';
+import Tesseract from 'tesseract.js';
 import { AiFillForward } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 
@@ -31,37 +32,79 @@ const Kiosk = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [totalCartItems, setTotalCartItems] = useState(0);
+  const [filteredProduct, setFilteredProduct] = useState([]);
   const [prescriptionFile, setPrescriptionFile] = useState(null);
 
+  
   const fetchProducts = async (category, isPrescription = false) => {
     setLoading(true);
     const productsRef = collection(db, "products");
     let q;
-    
+  
     if (isPrescription) {
       q = query(productsRef, where("prescriptionNeeded", "==", true));
     } else {
       q = query(productsRef, where("category", "==", category));
     }
-    
-    const snapshot = await getDocs(q);
-    const productData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    setProducts(productData);
-    setLoading(false);
+  
+    try {
+      const snapshot = await getDocs(q);
+      const productData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  
+      if (isPrescription) {
+        setFilteredProduct(productData);
+      }
+  
+      setProducts(productData);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
   };
-
+  
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
+    if (!file) return;
+  
     setPrescriptionFile(file);
-    if (file) {
-      alert("File uploaded successfully!");
+  
+    try {
+      const extractedMedications = await parsePrescription(file);
+  
+      const matchedProducts = products.filter(product =>
+        extractedMedications.includes(product.name.toLowerCase())
+      );
+  
+      if (matchedProducts.length) {
+        alert("Prescription verified! Displaying matching products.");
+        setFilteredProduct(matchedProducts);
+      } else {
+        alert("No matching products found for the prescription.");
+      }
+    } catch (error) {
+      alert("Failed to process prescription. Please try again.");
+    }
+  };
+  
+
+  const parsePrescription = async (imageFile) => {
+    try {
+      const { data: { text } } = await Tesseract.recognize(imageFile, 'eng');
+      const keywords = text.split(/\s+/);
+      return keywords.map(word => word.trim());
+    } catch (error) {
+      console.error("Error processing prescription image:", error);
+      return [];
     }
   };
 
   
 
   useEffect(() => {
-    fetchProducts(selectedCategory, selectedCategory === "Prescription Medication");
+    if (selectedCategory === "Prescription Medication") {
+      fetchProducts(selectedCategory, true);
+    }
   }, [selectedCategory]);
 
   useEffect(() => {
@@ -135,7 +178,7 @@ const Kiosk = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <aside className={`transition-all duration-500 ease-in-out ${isSidebarOpen ? "w-72" : "w-16"} bg-green-800 text-white p-4`}>
+      <aside className={`transition-all duration-500 ease-in-out ${isSidebarOpen ? "w-72" : "w-16"} bg-green-800 h-full text-white p-4`}>
         <button onClick={toggleSidebar} className="text-white mb-6 focus:outline-none">
           {isSidebarOpen ? <RxHamburgerMenu /> : <AiFillForward />}
         </button>

@@ -12,12 +12,14 @@ function ViewProduct({ product }) {
     const navigate = useNavigate();
     const [selectedDosage, setSelectedDosage] = useState('');
     const [stockLevel, setStockLevel] = useState(product.stockLevel);
+    const [price, setPrice] = useState(product.price);
 
     useEffect(() => {
         const productRef = doc(db, 'products', product.id);
         const unsubscribe = onSnapshot(productRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
                 setStockLevel(docSnapshot.data().stockLevel);
+                setPrice(docSnapshot.data().price);
             }
         });
         return () => unsubscribe();
@@ -87,7 +89,7 @@ function ViewProduct({ product }) {
                         <h2 className="font-bold text-4xl text-gray-900 capitalize mb-4">{product.name}</h2>
 
                         <div className="flex items-center space-x-6 mb-6">
-                            <h6 className="text-3xl font-semibold text-gray-800">₱{product.price}</h6>
+                            <h6 className="text-3xl font-semibold text-gray-800">₱{price}</h6>
                             <span className="text-gray-500 text-sm">84 reviews</span>
                             <span className={`text-lg font-semibold ${stockLevel > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 {stockLevel > 0 ? `In Stock: ${stockLevel}` : 'Out of Stock'}

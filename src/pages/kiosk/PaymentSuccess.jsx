@@ -128,6 +128,19 @@ const getUserFCMToken = async (userId) => {
   }
 };
 
+const clearUserCart = async (userId) => {
+  try {
+    const cartRef = doc(db, 'carts', userId);
+    
+    await updateDoc(cartRef, {
+      items: []  
+    });
+    console.log('User cart cleared successfully.');
+  } catch (error) {
+    console.error('Error clearing the user cart:', error);
+  }
+};
+
   useEffect(() => {
     const processOrder = async () => {
       if (!orderId) {
@@ -148,9 +161,8 @@ const getUserFCMToken = async (userId) => {
         const userId = transactionData.userId;
 
         await handlePurchaseAndUpdateStock(transactionData.userId);
-
-
-        await sendAdminNotification();
+        
+        await clearUserCart(transactionData.userId);
 
         await updateDoc(orderRef, { checkoutStatus: "processing" });
         navigate("/user/kiosk/order-summary", { state: { orderId, transactionData: { ...transactionData, isNewOrder: true }} });
