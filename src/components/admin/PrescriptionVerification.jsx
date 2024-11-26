@@ -50,35 +50,32 @@ function PrescriptionVerification() {
     setLoading(false);
   }, []);
 
-  const handleStatusUpdate = async (prescriptionId, newStatus, selectedProductIds, isStatusChange = false) => {
+  const handleStatusUpdate = async (prescriptionId, newStatus, selectedProductIds) => {
     try {
-        const prescriptionDocRef = doc(db, 'prescriptions', prescriptionId);
-        await updateDoc(prescriptionDocRef, {
-            status: newStatus,
-            productsAccess: selectedProductIds,
-        });
+      const prescriptionDocRef = doc(db, 'prescriptions', prescriptionId);
+      await updateDoc(prescriptionDocRef, {
+        status: newStatus,
+        productsAccess: selectedProductIds, // Save selected product IDs to the prescription document
+      });
 
-        setPrescriptions((prevPrescriptions) =>
-            prevPrescriptions.map((prescription) =>
-                prescription.id === prescriptionId
-                    ? { ...prescription, status: newStatus, productsAccess: selectedProductIds }
-                    : prescription
-            )
-        );
+      setPrescriptions((prevPrescriptions) =>
+        prevPrescriptions.map((prescription) =>
+          prescription.id === prescriptionId
+            ? { ...prescription, status: newStatus, productsAccess: selectedProductIds }
+            : prescription
+        )
+      );
 
-        if (isStatusChange) {
-            if (newStatus === 'Approved') {
-                toast.success(`Prescription ID: ${prescriptionId} has been approved!`);
-            } else if (newStatus === 'Rejected') {
-                toast.error(`Prescription ID: ${prescriptionId} has been rejected!`);
-            }
-        }
+      if (newStatus === 'Approved') {
+        toast.success(`Prescription ID: ${prescriptionId} has been approved!`);
+      } else if (newStatus === 'Rejected') {
+        toast.error(`Prescription ID: ${prescriptionId} has been rejected!`);
+      }
     } catch (error) {
-        console.error('Error updating prescription status:', error);
-        toast.error('Error updating prescription status.');
+      console.error('Error updating prescription status:', error);
+      toast.error('Error updating prescription status.');
     }
-};
-
+  };
 
   if (loading) {
     return <div>Loading prescriptions...</div>;
@@ -130,17 +127,17 @@ function PrescriptionVerification() {
                     {prescription.status === 'Pending' && (
                       <>
                         <button
-                          onClick={() => handleStatusUpdate(prescription.id, 'Approved', [], true)}
+                          onClick={() => handleStatusUpdate(prescription.id, 'Approved', [])}
                           className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none"
-                      >
+                        >
                           Approve
-                      </button>
-                      <button
-                          onClick={() => handleStatusUpdate(prescription.id, 'Rejected', [], true)}
+                        </button>
+                        <button
+                          onClick={() => handleStatusUpdate(prescription.id, 'Rejected', [])}
                           className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none"
-                      >
+                        >
                           Reject
-                      </button>
+                        </button>
                       </>
                     )}
                   </td>
@@ -148,16 +145,16 @@ function PrescriptionVerification() {
                   {products.map((product) => (
                     <div key={product.id} className="flex items-center space-x-2">
                         <input
-                          type="checkbox"
-                          onChange={(e) => {
-                              const currentProductsAccess = prescription.productsAccess || [];
-                              const productIds = e.target.checked
-                                  ? [...currentProductsAccess, product.id]
-                                  : currentProductsAccess.filter((id) => id !== product.id);
-                              handleStatusUpdate(prescription.id, prescription.status, productIds, false);
-                          }}
-                          checked={prescription.productsAccess?.includes(product.id) || false}
-                      />
+                        type="checkbox"
+                        onChange={(e) => {
+                            const currentProductsAccess = prescription.productsAccess || [];
+                            const productIds = e.target.checked
+                            ? [...currentProductsAccess, product.id]
+                            : currentProductsAccess.filter((id) => id !== product.id);
+                            handleStatusUpdate(prescription.id, prescription.status, productIds);
+                        }}
+                        checked={prescription.productsAccess?.includes(product.id) || false}
+                        />
                         <span>{product.name}</span>
                     </div>
                     ))}

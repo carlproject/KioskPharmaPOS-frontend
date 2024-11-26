@@ -1,33 +1,31 @@
-import { React, useEffect, useState } from "react";
+import { React, useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import jsPDF from "jspdf";
-import "jspdf-autotable"; 
-import { IoIosArrowRoundBack } from "react-icons/io";
-import logo from '../../assets/img/logo.png'
-import { format } from 'date-fns';
 import { doc, setDoc, getDoc, collection } from "firebase/firestore";
 import { db } from "../../config/firebase";
-
+import { format } from 'date-fns';
+import { IoIosArrowRoundBack } from "react-icons/io";
 
 function OrderSummary() {
-    const location = useLocation();
-    const { orderId, transactionData } = location.state || {};
-
+  const location = useLocation();
+  const { orderId, transactionData } = location.state || {};
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
+  const [notificationSent, setNotificationSent] = useState(false); // Track if notifications are sent
+  const notificationSentRef = useRef(false); // Using useRef to prevent re-sending
+
   const displayName = user.displayName;
-    if (!transactionData) {
-        return <p>Loading...</p>;
-    }
-    
-const getAdminFCMTokens = async () => {
+  if (!transactionData) {
+    return <p>Loading...</p>;
+  }
+
+  const getAdminFCMTokens = async () => {
     try {
       const adminRef = doc(db, "admin", "checachio@gmail.com");
       const adminDoc = await getDoc(adminRef);
-  
+
       if (adminDoc.exists()) {
         const data = adminDoc.data();
         const fcmTokens = data.fcmTokens || [];
-        
+
         if (fcmTokens.length > 0) {
           return fcmTokens;
         } else {
@@ -43,12 +41,11 @@ const getAdminFCMTokens = async () => {
       return null;
     }
   };
-  
+
   const sendAdminNotification = async () => {
     try {
-      const orderId = `order-${Date.now()}`;
       const adminFCMTokens = await getAdminFCMTokens();
-      
+
       if (adminFCMTokens && adminFCMTokens.length > 0) {
         await fetch("http://localhost:5000/user/send-notification/order", {
           method: "POST",
@@ -67,13 +64,12 @@ const getAdminFCMTokens = async () => {
       console.error("Error sending notification:", error);
     }
   };
-  
-  
+
   const getUserFCMToken = async (userId) => {
     try {
       const userRef = doc(db, "users", userId);
       const userDoc = await getDoc(userRef);
-  
+
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const fcmToken = userData.fcmTokens || null;
@@ -87,39 +83,44 @@ const getAdminFCMTokens = async () => {
       return null;
     }
   };
-  
+
   useEffect(() => {
-        const handleEWalletNotifications = async () => {
-            if (transactionData.isNewOrder && transactionData.paymentMethod === "E-wallet") {
-                try {
-                    const recipientToken = await getUserFCMToken(user.uid);
-                    await setDoc(doc(collection(db, 'transactions'), orderId), transactionData);
-                    console.log('Transaction saved successfully:', orderId);
+    const handleEWalletNotifications = async () => {
+      if (
+        transactionData.isNewOrder &&
+        transactionData.paymentMethod === "E-wallet" &&
+        !notificationSentRef.current // Only send notification if not already sent
+      ) {
+        try {
+          const recipientToken = await getUserFCMToken(user.uid);
+          await setDoc(doc(collection(db, 'transactions'), orderId), transactionData);
+          console.log('Transaction saved successfully:', orderId);
 
-                    if (recipientToken) {
-                        await fetch("http://localhost:5000/user/send-notification", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                title: "Transaction Confirmed",
-                                body: "Your order has been successfully confirmed.",
-                                recipientToken,
-                            }),
-                        });
-                    } else {
-                        console.log("No valid recipient token found");
-                    }
+          if (recipientToken) {
+            await fetch("http://localhost:5000/user/send-notification", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                title: "Transaction Confirmed",
+                body: "Your order has been successfully confirmed.",
+                recipientToken,
+              }),
+            });
+          } else {
+            console.log("No valid recipient token found");
+          }
 
-                    await sendAdminNotification();
-                } catch (error) {
-                    console.error("Error handling E-wallet notifications:", error);
-                }
-            }
-        };
+          await sendAdminNotification();
+          setNotificationSent(true); // Set the state to true to prevent future notifications
+          notificationSentRef.current = true; // Ensure notification is sent only once
+        } catch (error) {
+          console.error("Error handling E-wallet notifications:", error);
+        }
+      }
+    };
 
-        handleEWalletNotifications();
-    }, [transactionData, orderId, user.uid]);
-
+    handleEWalletNotifications();
+  }, [transactionData, orderId, user.uid, notificationSent]);
 
     let displayDate = format(new Date(), 'MMMM do yyyy');
     let pesoSign = '₱';

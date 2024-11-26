@@ -186,7 +186,9 @@ const Kiosk = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <aside className={`transition-all duration-500 ease-in-out ${isSidebarOpen ? "w-72" : "w-16"} bg-green-800 h-full text-white p-4`}>
+      <aside
+        className={`transition-all duration-500 ease-in-out fixed top-0 left-0 ${isSidebarOpen ? "w-72" : "w-16"} bg-green-800 h-screen text-white p-4 overflow-y-auto`}
+      >
         <button onClick={toggleSidebar} className="text-white mb-6 focus:outline-none">
           {isSidebarOpen ? <RxHamburgerMenu /> : <AiFillForward />}
         </button>
@@ -195,7 +197,9 @@ const Kiosk = () => {
           {categories.map((category) => (
             <li
               key={category.name}
-              className={`flex items-center p-2 cursor-pointer rounded-md transition-all duration-300 ${selectedCategory === category.name ? "bg-green-900 text-white" : "hover:bg-green-700 text-gray-200"}`}
+              className={`flex items-center p-2 cursor-pointer rounded-md transition-all duration-300 ${
+                selectedCategory === category.name ? "bg-green-900 text-white" : "hover:bg-green-700 text-gray-200"
+              }`}
               onClick={() => handleCategoryChange(category.name)}
             >
               <span className="text-xl mr-4">{category.icon}</span>
@@ -205,7 +209,7 @@ const Kiosk = () => {
         </ul>
       </aside>
 
-      <main className="flex-grow p-6">
+      <main className={`flex-grow p-6 ${isSidebarOpen ? "ml-72" : "ml-16"}`}>
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-4">
             <h2 className="text-3xl font-bold text-gray-800">{selectedCategory}</h2>
@@ -261,7 +265,7 @@ const Kiosk = () => {
                     </h3>
                     <p className="text-sm text-gray-500 mt-2">{product.description}</p>
                     <div className="flex justify-between items-center mt-4">
-                      <p className="text-xl font-semibold text-gray-800">{product.price} PHP</p>
+                      <p className="text-xl font-semibold text-gray-800">₱{product.price}</p>
                       {product.prescriptionNeeded && (
                         <span className="text-xs text-red-600 bg-red-100 rounded-full px-2 py-1">Prescription</span>
                       )}
@@ -279,7 +283,6 @@ const Kiosk = () => {
             <h3 className="text-2xl font-semibold text-red-600 mb-4">Prescription Upload</h3>
             <p className="text-gray-700 mb-4">Please upload your prescription for verification.</p>
 
-            {/* Prescription File Upload */}
             <div className="mb-4">
               <input
                 type="file"
