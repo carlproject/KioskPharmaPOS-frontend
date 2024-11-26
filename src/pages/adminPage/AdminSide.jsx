@@ -12,6 +12,7 @@ import Notifications from '../../components/admin/Notifications';
 import PrescriptionManagement from '../../components/admin/PrescriptionManagement';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import Toastify styles
+import PrescriptionVerification from '../../components/admin/PrescriptionVerification';
 
 function AdminSide() {
   const navigate = useNavigate();
@@ -94,6 +95,8 @@ function AdminSide() {
         return <Analytics />;
       case 'Notifications And Messages':
         return <Notifications />;
+      case 'Prescription Verification':
+        return <PrescriptionVerification />;
       default:
         return <AddProduct />;
     }

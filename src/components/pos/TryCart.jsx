@@ -2,7 +2,7 @@ import { React, useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { db } from '../../config/firebase';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { serverTimestamp, collection, doc, setDoc, writeBatch, updateDoc, getDocs, getDoc } from 'firebase/firestore';
 import { loadStripe} from '@stripe/stripe-js';
 import { IoIosArrowRoundBack } from 'react-icons/io';
@@ -409,7 +409,7 @@ const removeToCart = async (productId) => {
   const handleVoucherSubmit = (e) => {
     e.preventDefault();
     if (voucherCode === 'CUTEKO') {
-      alert('Congratulations! You just got a 10% discount voucher');
+      toast.success("Congratulations you just got 10% discount");
       setIsVoucherValid(true); 
       setSavings(discountRate);
     } else {
@@ -425,6 +425,7 @@ const removeToCart = async (productId) => {
 
   return (
     <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover draggable />
       <button onClick={() => window.location.href = "../../../user/kiosk"} className="absolute flex items-center top-4 left-4 text-green-600 font-semibold border-2 p-1 rounded-md border-green-500 opacity-85 hover:bg-green-500 hover:text-white">
                 <IoIosArrowRoundBack size={25}/>
                 Back to Kiosk
