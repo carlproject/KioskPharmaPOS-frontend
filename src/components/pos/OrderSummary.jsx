@@ -4,6 +4,9 @@ import { doc, setDoc, getDoc, collection } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { format } from 'date-fns';
 import { IoIosArrowRoundBack } from "react-icons/io";
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import logo from '../../assets/img/logo.png'
 
 function OrderSummary() {
   const location = useLocation();
@@ -157,8 +160,8 @@ function OrderSummary() {
             item.name,
             item.dosage || "N/A",
             item.quantity,
-            `₱${item.price.toFixed(2)}`,
-            `₱${(item.price * item.quantity).toFixed(2)}`
+            `Php${item.price.toFixed(2)}`,
+            `Php${(item.price * item.quantity).toFixed(2)}`
         ]));
         
         doc.autoTable({
@@ -185,14 +188,14 @@ function OrderSummary() {
         const totalDiscount = transactionData.discountAmount || 0;
         const totalTax = transactionData.tax || 0;
 
-        doc.text(`Subtotal: ${pesoSign}${subtotal.toFixed(2)}`, 10, finalY);
-        doc.text(`Discount: ₱${totalDiscount.toFixed(2)}`, 10, finalY + 10);
-        doc.text(`Taxes: ₱${totalTax.toFixed(2)}`, 10, finalY + 20);
+        doc.text(`Subtotal: Php ${subtotal.toFixed(2)}`, 10, finalY);
+        doc.text(`Discount: Php ${totalDiscount.toFixed(2)}`, 10, finalY + 10);
+        doc.text(`Taxes: Php ${totalTax.toFixed(2)}`, 10, finalY + 20);
 
         doc.setTextColor(primaryColor);
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text(`Total: ₱${transactionData.total.toFixed(2)}`, 10, finalY + 35);
+        doc.text(`Total: Php ${transactionData.total.toFixed(2)}`, 10, finalY + 35);
 
         doc.setTextColor(secondaryColor);
         doc.setFontSize(10);
