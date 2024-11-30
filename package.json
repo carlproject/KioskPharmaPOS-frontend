@@ -31,6 +31,7 @@
     "pdfmake": "^0.2.15",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
+    "react-data-table-component": "^7.6.2",
     "react-datepicker": "^7.5.0",
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { db } from '../../config/firebase';
 import { toast, ToastContainer } from 'react-toastify';
-import { serverTimestamp, collection, doc, setDoc, writeBatch, updateDoc, getDocs, getDoc } from 'firebase/firestore';
+import { serverTimestamp, collection, doc, setDoc, writeBatch, updateDoc, getDocs, getDoc, addDoc } from 'firebase/firestore';
 import { loadStripe} from '@stripe/stripe-js';
 import { IoIosArrowRoundBack } from 'react-icons/io';
 import LoadingSpinner from '../LoadingSpinner';
@@ -65,16 +65,26 @@ function TryCart() {
 const handleCheckoutClick = () => setShowPaymentModal(true);
 const handleCloseModal = () => setShowPaymentModal(false);
 
+const addHistoryLog = async (action, productName, details) => {
+  const historyRef = collection(db, "history");
+  await addDoc(historyRef, {
+    action,
+    productName,
+    details,
+    timestamp: new Date(),
+  });
+};
 
 const handlePurchaseAndUpdateStock = async (userId) => {
   const batch = writeBatch(db);
+  
   try {
     const userCartRef = doc(db, 'carts', userId);
     const userCartSnapshot = await getDoc(userCartRef);
 
     if (!userCartSnapshot.exists()) {
       console.warn(`No cart found for userId: ${userId}`);
-      return; 
+      return;
     }
 
     const cartData = userCartSnapshot.data();
@@ -93,14 +103,20 @@ const handlePurchaseAndUpdateStock = async (userId) => {
       if (productSnapshot.exists()) {
         const productData = productSnapshot.data();
         const currentStockLevel = productData.stockLevel;
-        
+
         const newStockLevel = currentStockLevel - item.quantity;
-        console.log(`Current stock level for ${item.name}: ${currentStockLevel}`);
+        console.log(`Current stock for ${item.name}: ${currentStockLevel}`);
         console.log(`Attempting to reduce stock by: ${item.quantity}`);
         console.log(`New stock level will be: ${newStockLevel}`);
 
         if (newStockLevel >= 0) {
           batch.update(productRef, { stockLevel: newStockLevel });
+
+          await addHistoryLog(
+            'Outbound',
+            item.name,
+            `Removed ${item.quantity} units.`
+          );
         } else {
           console.warn(`Insufficient stock for item: ${item.name}`);
         }
@@ -111,10 +127,13 @@ const handlePurchaseAndUpdateStock = async (userId) => {
 
     await batch.commit();
     console.log('Batch commit successful: stock levels updated.');
+    toast.success('Stock levels updated successfully!');
   } catch (error) {
-    console.error("Error updating stock levels:", error);
+    console.error('Error processing outbound:', error);
+    toast.error('Failed to process outbound stock.');
   }
 };
+
 
 const getAdminFCMTokens = async () => {
   try {
@@ -241,10 +260,8 @@ const onConfirmCheckout = async (paymentMethod) => {
         console.log("No valid recipient token found");
       }
   
-      await sendAdminNotification();
 
       await clearUserCart(userId);
-
       setCheckoutStatus('success');
       navigate('/user/kiosk/order-summary', { state: { orderId, transactionData, isNewOrder: true } });
     } catch (error) {

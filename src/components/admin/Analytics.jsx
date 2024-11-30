@@ -21,8 +21,6 @@ function Analytics() {
     new Date(new Date().getFullYear(), new Date().getMonth(), 1)
   );
   const [endDate, setEndDate] = useState(new Date());
-
-  // Fetch transactions and process data
   const fetchAndProcessData = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "transactions"));
@@ -38,20 +36,17 @@ function Analytics() {
     }
   };
 
-  // Filter transactions based on selected date range
   const filterTransactionsByDate = (transactions) =>
     transactions.filter(
       (tx) => tx.timestamp >= startDate && tx.timestamp <= endDate
     );
 
-  // Update summary, chart data, and sales data
   const updateDashboard = (filteredData) => {
     calculateSummary(filteredData);
     generateChartData(filteredData);
     setSalesData(filteredData);
   };
 
-  // Calculate summary data
   const calculateSummary = (transactions) => {
     const totalSales = transactions.reduce((sum, tx) => sum + (tx.total || 0), 0);
     const totalQuantity = transactions.reduce(
@@ -67,7 +62,6 @@ function Analytics() {
     setSummaryData({ totalSales, totalQuantity, averageOrderValue });
   };
 
-  // Generate data for charts
   const generateChartData = (transactions) => {
     const labels = transactions.map((tx) => tx.timestamp.toLocaleDateString());
     const salesByProduct = {};
@@ -123,7 +117,6 @@ function Analytics() {
     });
   };
 
-  // Export data to Excel
   const exportToExcel = () => {
     try {
       const data = salesData.map((tx) => ({
@@ -159,7 +152,6 @@ function Analytics() {
     }
   };
 
-  // Fetch data on component mount or when dates change
   useEffect(() => {
     fetchAndProcessData();
   }, [startDate, endDate]);
@@ -169,7 +161,6 @@ function Analytics() {
       <div className="p-6 border-2 border-gray-200 rounded-lg shadow-lg bg-gray-100">
         <h1 className="text-3xl font-semibold mb-8">Analytics Dashboard</h1>
 
-        {/* Date Range Selector */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-lg font-medium">Current Date Range:</h2>
@@ -193,7 +184,6 @@ function Analytics() {
           </div>
         </div>
 
-        {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <SummaryCard
             title="Total Sales"
@@ -212,7 +202,6 @@ function Analytics() {
           />
         </div>
 
-        {/* Charts */}
         {chartData && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ChartCard title="Sales by Product">
@@ -225,7 +214,6 @@ function Analytics() {
         )}
       </div>
 
-      {/* Date Range Modal */}
       {isModalOpen && (
         <DateRangeModal
           startDate={startDate}

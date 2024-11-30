@@ -1,24 +1,28 @@
 import { React, useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { doc, setDoc, getDoc, collection } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, updateDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { format } from 'date-fns';
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import logo from '../../assets/img/logo.png'
+import logo from '../../assets/img/logo.png';
+import { toast, ToastContainer} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function OrderSummary() {
   const location = useLocation();
+  const [isModalOpen, setModalOpen] = useState(false);
   const { orderId, transactionData } = location.state || {};
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
-  const [notificationSent, setNotificationSent] = useState(false); // Track if notifications are sent
-  const notificationSentRef = useRef(false); // Using useRef to prevent re-sending
+  const [notificationSent, setNotificationSent] = useState(false);
+  const notificationSentRef = useRef(false);
 
   const displayName = user.displayName;
   if (!transactionData) {
     return <p>Loading...</p>;
   }
+
 
   const getAdminFCMTokens = async () => {
     try {
@@ -45,6 +49,7 @@ function OrderSummary() {
     }
   };
 
+  
   const sendAdminNotification = async () => {
     try {
       const adminFCMTokens = await getAdminFCMTokens();
@@ -67,6 +72,32 @@ function OrderSummary() {
       console.error("Error sending notification:", error);
     }
   };
+
+  const handleCancelOrder = async () => {
+    try {
+      const orderRef = doc(db, "transactions", orderId);
+      await updateDoc(orderRef, { checkOutStatus: "Cancelled" });
+  
+      setModalOpen(false);
+      toast.success("Order successfully canceled!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+  
+      const orderDoc = await getDoc(orderRef);
+      const { userId } = orderDoc.data();
+  
+      await sendAdminNotification();
+    } catch (error) {
+      console.error("Error cancelling the order:", error);
+      alert("Failed to cancel the order. Please try again.");
+    }
+  };
+  
 
   const getUserFCMToken = async (userId) => {
     try {
@@ -92,7 +123,7 @@ function OrderSummary() {
       if (
         transactionData.isNewOrder &&
         transactionData.paymentMethod === "E-wallet" &&
-        !notificationSentRef.current // Only send notification if not already sent
+        !notificationSentRef.current
       ) {
         try {
           const recipientToken = await getUserFCMToken(user.uid);
@@ -114,8 +145,8 @@ function OrderSummary() {
           }
 
           await sendAdminNotification();
-          setNotificationSent(true); // Set the state to true to prevent future notifications
-          notificationSentRef.current = true; // Ensure notification is sent only once
+          setNotificationSent(true); 
+          notificationSentRef.current = true;
         } catch (error) {
           console.error("Error handling E-wallet notifications:", error);
         }
@@ -160,8 +191,8 @@ function OrderSummary() {
             item.name,
             item.dosage || "N/A",
             item.quantity,
-            `Php${item.price.toFixed(2)}`,
-            `Php${(item.price * item.quantity).toFixed(2)}`
+            `Php ${item.price.toFixed(2)}`,
+            `Php ${(item.price * item.quantity).toFixed(2)}`
         ]));
         
         doc.autoTable({
@@ -207,6 +238,7 @@ function OrderSummary() {
 
     return (
         <section className="py-24 relative">
+          <ToastContainer position="top-right"/>
             <button onClick={() => window.location.href = "../../user/kiosk"} className="absolute flex items-center top-4 left-4 text-green-600 font-semibold border-b-2 hover:bg-border-600">
                 <IoIosArrowRoundBack size={25}/>
                 Back to Kiosk
@@ -274,8 +306,36 @@ function OrderSummary() {
                             <p className="font-semibold text-2xl leading-9 text-black">₱{((transactionData.total.toFixed(2) ))}</p>
                         </div>
                     </div>
+                    <button
+                      onClick={() => setModalOpen(true)} // Open modal on button click
+                      className="w-full py-2 px-4 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
+                    >
+                      Cancel Order
+                    </button>
                 </div>
             </div>
+              {isModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+                    <h3 className="text-lg font-semibold mb-4">Confirm Cancellation</h3>
+                    <p className="text-gray-600 mb-6">Are you sure you want to cancel this order?</p>
+                    <div className="flex justify-end space-x-4">
+                      <button
+                        onClick={() => setModalOpen(false)} 
+                        className="py-2 px-4 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onClick={handleCancelOrder}
+                        className="py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
         </section>
     );
 }

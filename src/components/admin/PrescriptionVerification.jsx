@@ -55,7 +55,7 @@ function PrescriptionVerification() {
       const prescriptionDocRef = doc(db, 'prescriptions', prescriptionId);
       await updateDoc(prescriptionDocRef, {
         status: newStatus,
-        productsAccess: selectedProductIds, // Save selected product IDs to the prescription document
+        productsAccess: selectedProductIds,
       });
 
       setPrescriptions((prevPrescriptions) =>

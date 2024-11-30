@@ -2,6 +2,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import AppRoutes from './AppRoutes.jsx'
 import './index.css'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
@@ -18,6 +21,7 @@ if ('serviceWorker' in navigator) {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
       <AppRoutes />
+      <ToastContainer />
   </StrictMode>,
 )
 
