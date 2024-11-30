@@ -44,7 +44,7 @@ function PrescriptionHistory() {
 
     const handleViewDetails = (transaction) => {
         navigate("/user/kiosk/order-summary", {
-            state: { orderId: transaction.id, transactionData: { ...transaction, isNewOrder: false },  },
+            state: { orderId: transaction.id, transactionData: { ...transaction, isNewOrder: false } },
         });
     };
 
@@ -66,13 +66,17 @@ function PrescriptionHistory() {
             </motion.h2>
 
             <div className="flex justify-center mb-8 space-x-6">
-                {["processing", "Confirmed"].map((status) => (
+                {["processing", "Confirmed", "Cancelled"].map((status) => (
                     <button
                         key={status}
                         onClick={() => setActiveTab(status)}
                         className={`py-2 px-6 rounded-full font-semibold transition-colors duration-200 ${
                             activeTab === status
-                                ? "bg-green-600 text-white shadow-lg"
+                                ? status === "Confirmed"
+                                    ? "bg-green-600 text-white shadow-lg"
+                                    : status === "Cancelled"
+                                    ? "bg-red-600 text-white shadow-lg"
+                                    : "bg-yellow-600 text-white shadow-lg"
                                 : "bg-gray-200 text-gray-700"
                         }`}
                     >
@@ -111,6 +115,8 @@ function PrescriptionHistory() {
                                     className={`font-semibold ${
                                         transaction.checkoutStatus === "Confirmed"
                                             ? "text-green-600"
+                                            : transaction.checkoutStatus === "Cancelled"
+                                            ? "text-red-600"
                                             : "text-yellow-500"
                                     }`}
                                 >

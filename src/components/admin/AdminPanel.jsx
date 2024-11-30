@@ -7,6 +7,7 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { getMessaging, getToken } from 'firebase/messaging';
 import { toast } from 'react-toastify';
 import { db } from '../../config/firebase';
+import { FcSelfServiceKiosk } from "react-icons/fc";
 
 const AdminPanel = ({ setActiveComponent, activeComponent }) => {
   
@@ -403,8 +404,17 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
             </li>
             <li>
               <button
+              onClick={() => setActiveComponent('Kiosk')}
+              className={`flex w-full items-center p-2 text-gray-900 rounded-lg dark:text-white ${activeComponent === 'Kiosk' ? 'bg-green-700' : ''} dark:hover:bg-gray-700 group`}
+              >
+                <FcSelfServiceKiosk className='w-5 h-5'/>
+                <span className="flex-1 ms-3 whitespace-nowrap md:mr-[95px] text-green-500">Kiosk</span>
+              </button>
+            </li>
+            <li>
+              <button
               onClick={() => setActiveComponent('Notifications And Messages')}
-              className={`flex w-full mt-[328px] items-center p-2 text-gray-900 rounded-lg dark:text-white ${activeComponent === 'Notifications And Messages' ? 'bg-green-700' : ''} dark:hover:bg-gray-700 group`}
+              className={`flex w-full mt-[273px] items-center p-2 text-gray-900 rounded-lg dark:text-white ${activeComponent === 'Notifications And Messages' ? 'bg-green-700' : ''} dark:hover:bg-gray-700 group`}
               >
                 <svg
               aria-hidden="true"

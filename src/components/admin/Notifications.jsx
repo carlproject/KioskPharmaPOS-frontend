@@ -3,8 +3,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { db } from '../../config/firebase';
 import { collection, onSnapshot, updateDoc, doc, getDoc } from 'firebase/firestore';
-import { onMessage } from "firebase/messaging";
-import { messaging } from '../../config/firebase';
 
 function Notifications() {
   const [orders, setOrders] = useState([]);
@@ -24,50 +22,55 @@ function Notifications() {
         });
       });
     });
-    
+    return () => unsubscribe();
   }, []);
 
-  const updateOrderStatus = async (orderId) => {
+  const updateOrderStatus = async (orderId, status) => {
     setLoadingOrderId(orderId);
     try {
       const orderRef = doc(db, 'transactions', orderId);
-      await updateDoc(orderRef, { checkoutStatus: 'Confirmed' });
+      await updateDoc(orderRef, { checkoutStatus: status });
 
       const orderDoc = await getDoc(orderRef);
       const { userId } = orderDoc.data();
 
       await fetch('http://localhost:5000/admin/send-notification', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
-          title: "Order Confirmed",
-          message: `Your order #${orderId} has been confirmed!`,
+          title: `Order ${status}`,
+          message: `Your order #${orderId} has been ${status.toLowerCase()}!`,
           orderId: orderId,
         }),
       });
 
-      toast.success(`Order #${orderId} has been confirmed!`, { position: 'top-right', autoClose: 5000 });
+      toast.success(`Order #${orderId} has been ${status.toLowerCase()}!`, { position: 'top-right', autoClose: 5000 });
     } catch (error) {
       console.error('Error updating order status:', error);
-      toast.error('Failed to confirm order. Please try again.');
+      toast.error('Failed to update order status. Please try again.');
     } finally {
       setLoadingOrderId(null);
     }
   };
 
-  const filteredOrders = orders.filter(order => 
-    activeTab === 'Processing' ? order.checkoutStatus !== 'Confirmed' : order.checkoutStatus === 'Confirmed'
-  );
+  const filteredOrders = orders.filter(order => {
+    if (activeTab === 'Processing') {
+      return order.checkoutStatus !== 'Confirmed' && order.checkoutStatus !== 'Cancelled';
+    } else if (activeTab === 'Confirmed') {
+      return order.checkoutStatus === 'Confirmed';
+    } else if (activeTab === 'Cancelled') {
+      return order.checkoutStatus === 'Cancelled';
+    }
+  });
+  
 
   return (
-    <div className="p-4 sm:ml-64">
+    <div className="p-6 sm:ml-64">
       <ToastContainer />
-      <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
+      <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14 bg-white shadow-lg">
         <section className="py-8">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Order Confirmations</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-center text-blue-600">Order Confirmations</h2>
           <div className="flex justify-center mb-6 gap-4">
             <button 
               className={`px-6 py-2 rounded-t-lg ${activeTab === 'Processing' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
@@ -81,11 +84,18 @@ function Notifications() {
             >
               Confirmed
             </button>
+            <button 
+              className={`px-6 py-2 rounded-t-lg ${activeTab === 'Cancelled' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+              onClick={() => setActiveTab('Cancelled')}
+            >
+              Cancelled
+            </button>
           </div>
+
           {filteredOrders.length > 0 ? (
             <div className="space-y-4">
               {filteredOrders.map((order) => (
-                <div key={order.id} className="bg-white shadow-md rounded-lg p-4">
+                <div key={order.id} className="bg-white shadow-md rounded-lg p-4 hover:shadow-xl transition duration-300 ease-in-out">
                   <button
                     className="w-full text-left"
                     onClick={() => setOrders((prev) =>
@@ -93,11 +103,12 @@ function Notifications() {
                     )}
                   >
                     <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-bold">Order ID: {order.orderId}</h3>
+                      <h3 className="text-lg font-bold text-gray-800">Order ID: {order.orderId}</h3>
                       <span
                         className={`text-sm px-2 py-1 rounded ${
-                          order.checkoutStatus === 'Confirmed' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'
-                        }`}
+                          order.checkoutStatus === 'Confirmed' ? 'bg-green-100 text-green-600' : 
+                          order.checkoutStatus === 'Cancelled' ? 'bg-red-100 text-red-600' : 
+                          'bg-yellow-100 text-yellow-600'}`}
                       >
                         {order.checkoutStatus}
                       </span>
@@ -126,10 +137,10 @@ function Notifications() {
                           ))}
                         </div>
                       </div>
-                      <div className="mt-4 flex justify-end">
-                        {order.checkoutStatus !== 'Confirmed' && (
+                      <div className="mt-4 flex justify-end space-x-2">
+                        {order.checkoutStatus !== 'Confirmed' && order.checkoutStatus !== 'Cancelled' && (
                           <button
-                            onClick={() => updateOrderStatus(order.orderId)}
+                            onClick={() => updateOrderStatus(order.orderId, 'Confirmed')}
                             className={`${
                               loadingOrderId === order.id ? 'bg-blue-300' : 'bg-blue-500 hover:bg-blue-600'
                             } text-white px-4 py-2 rounded-md transition duration-300`}

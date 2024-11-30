@@ -160,7 +160,7 @@ const getAdminFCMTokens = async () => {
   }
 };
 
-const sendAdminNotification = async () => {
+const sendAdminNotification = async (userId) => {
   try {
     const orderId = `order-${Date.now()}`;
     const adminFCMTokens = await getAdminFCMTokens();
@@ -173,6 +173,7 @@ const sendAdminNotification = async () => {
           title: "New Order",
           message: "A new order has been placed.",
           orderId: orderId,
+          userId: userId,
           fcmTokens: adminFCMTokens,
         }),
       });
@@ -260,7 +261,7 @@ const onConfirmCheckout = async (paymentMethod) => {
         console.log("No valid recipient token found");
       }
   
-
+      sendAdminNotification(userId);
       await clearUserCart(userId);
       setCheckoutStatus('success');
       navigate('/user/kiosk/order-summary', { state: { orderId, transactionData, isNewOrder: true } });
