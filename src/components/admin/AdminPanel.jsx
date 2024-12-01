@@ -8,6 +8,7 @@ import { getMessaging, getToken } from 'firebase/messaging';
 import { toast } from 'react-toastify';
 import { db } from '../../config/firebase';
 import { FcSelfServiceKiosk } from "react-icons/fc";
+import MovingBanner from './MovingBanner';
 
 const AdminPanel = ({ setActiveComponent, activeComponent }) => {
   
@@ -45,16 +46,17 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
       
         await Promise.all(
           products.map(async (product) => {
-            if (product.stockLevel < 10) {
+            // Check if stockLevel is defined and is a valid number
+            if (product.stockLevel && product.stockLevel < 10) {
               stocksAlerts.push(product.name);
               await sendNotification(`Low Stock Alert: ${product.name} is running low.`);
             }
-            
-      
+        
+            // Check if expirationDate is valid and handle expiry alert
             if (product.expirationDate && product.expirationDate.toDate) {
               const expiryDate = product.expirationDate.toDate();
               const daysUntilExpiry = differenceInDays(expiryDate, today);
-            
+        
               if (daysUntilExpiry <= 14 && daysUntilExpiry >= 0) {
                 expiryAlerts.push({
                   name: product.name,
@@ -62,12 +64,12 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
                 });
                 await sendNotification(`Expiry Alert: ${product.name} is nearing expiry.`);
               }
-            }
-             else {
+            } else {
               console.warn(`Expiration date is missing for product: ${product.name}`);
             }
           })
         );
+        
 
         const ordersCollection = collection(db, "transactions");
         const ordersSnapshot = await getDocs(ordersCollection);
@@ -121,6 +123,13 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
           <img src={logo} alt="Checacio Logo" className="h-8" />
           <h1 className="text-xl font-bold text-green-500">Checacio's Store</h1>
         </div>
+
+        <div className="flex-grow flex justify-center">
+            <MovingBanner 
+              expiryProducts={productAlerts.expiry} 
+              outOfStockProducts={productAlerts.stocks} 
+            />
+          </div>
 
         <div className="flex items-center space-x-4">
           <div className="relative">
@@ -287,9 +296,6 @@ const AdminPanel = ({ setActiveComponent, activeComponent }) => {
                 </div>
               </div>
             )}
-
-
-
 
           </div>
 

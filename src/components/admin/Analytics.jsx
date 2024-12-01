@@ -15,12 +15,14 @@ function Analytics() {
     totalSales: 0,
     totalQuantity: 0,
     averageOrderValue: 0,
+    dailyInflation: 0,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [startDate, setStartDate] = useState(
     new Date(new Date().getFullYear(), new Date().getMonth(), 1)
   );
   const [endDate, setEndDate] = useState(new Date());
+
   const fetchAndProcessData = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "transactions"));
@@ -58,9 +60,30 @@ function Analytics() {
       0
     );
     const averageOrderValue = totalSales / (transactions.length || 1);
-
-    setSummaryData({ totalSales, totalQuantity, averageOrderValue });
+  
+    const salesByDate = transactions.reduce((acc, tx) => {
+      const date = tx.timestamp.toISOString().split("T")[0];
+      acc[date] = (acc[date] || 0) + (tx.total || 0);
+      return acc;
+    }, {});
+  
+    const sortedDates = Object.keys(salesByDate).sort();
+    const todaySales = salesByDate[sortedDates[sortedDates.length - 1]] || 0;
+    const yesterdaySales =
+      sortedDates.length > 1
+        ? salesByDate[sortedDates[sortedDates.length - 2]]
+        : 0;
+  
+    const dailyInflation = todaySales - yesterdaySales;
+  
+    setSummaryData({
+      totalSales,
+      totalQuantity,
+      averageOrderValue,
+      dailyInflation,
+    });
   };
+  
 
   const generateChartData = (transactions) => {
     const labels = transactions.map((tx) => tx.timestamp.toLocaleDateString());
@@ -157,9 +180,9 @@ function Analytics() {
   }, [startDate, endDate]);
 
   return (
-    <div className="p-6 sm:ml-64">
-      <div className="p-6 border-2 border-gray-200 rounded-lg shadow-lg bg-gray-100">
-        <h1 className="text-3xl font-semibold mb-8">Analytics Dashboard</h1>
+    <div className="p-6 sm:ml-64 bg-gradient-to-br from-gray-100 to-gray-200">
+      <div className="p-6 border-2 border-gray-200 rounded-lg shadow-lg bg-white">
+        <h1 className="text-4xl font-semibold mb-8 text-center">Analytics Dashboard</h1>
 
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -184,7 +207,7 @@ function Analytics() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <SummaryCard
             title="Total Sales"
             value={`₱${summaryData.totalSales.toLocaleString()}`}
@@ -200,6 +223,12 @@ function Analytics() {
             value={`₱${summaryData.averageOrderValue.toFixed(2)}`}
             color="purple"
           />
+          <SummaryCard
+            title="Daily Inflation"
+            value={`₱${summaryData.dailyInflation.toLocaleString()}`}
+            color={summaryData.dailyInflation >= 0 ? "green" : "red"}
+          />
+
         </div>
 
         {chartData && (
@@ -231,25 +260,22 @@ function Analytics() {
   );
 }
 
-// Reusable Summary Card Component
 const SummaryCard = ({ title, value, color }) => (
   <div
-    className={`bg-${color}-500 text-white p-6 rounded-lg shadow-lg text-center`}
+    className={`p-6 rounded-lg shadow-lg text-white bg-${color}-500`}
   >
-    <h3 className="text-lg font-medium">{title}</h3>
-    <p className="text-2xl font-bold">{value}</p>
+    <h3 className="text-xl font-bold">{title}</h3>
+    <p className="text-2xl mt-2">{value}</p>
   </div>
 );
 
-// Reusable Chart Card Component
 const ChartCard = ({ title, children }) => (
   <div className="p-6 border-2 border-gray-200 rounded-lg shadow-lg bg-white">
     <h3 className="text-lg font-medium mb-4">{title}</h3>
-    <div className="relative w-full h-64">{children}</div>
+    <div className="h-64">{children}</div>
   </div>
 );
 
-// Date Range Modal Component
 const DateRangeModal = ({
   startDate,
   endDate,
@@ -258,36 +284,36 @@ const DateRangeModal = ({
   onClose,
   onApply,
 }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-      <h2 className="text-lg font-medium mb-4">Select Date Range</h2>
-      <div className="flex flex-col space-y-4">
+  <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
+    <div className="p-6 bg-white rounded-lg shadow-lg">
+      <h3 className="text-xl font-medium mb-4">Customize Date Range</h3>
+      <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Start Date</label>
+          <label className="block font-medium mb-1">Start Date:</label>
           <DatePicker
             selected={startDate}
-            onChange={onStartDateChange}
-            className="w-full border-2 border-gray-200 rounded-lg px-4 py-2"
+            onChange={(date) => onStartDateChange(date)}
+            className="w-full border border-gray-300 rounded-lg"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">End Date</label>
+          <label className="block font-medium mb-1">End Date:</label>
           <DatePicker
             selected={endDate}
-            onChange={onEndDateChange}
-            className="w-full border-2 border-gray-200 rounded-lg px-4 py-2"
+            onChange={(date) => onEndDateChange(date)}
+            className="w-full border border-gray-300 rounded-lg"
           />
         </div>
       </div>
-      <div className="flex justify-end space-x-4 mt-6">
+      <div className="mt-6 flex justify-end space-x-4">
         <button
-          className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+          className="px-4 py-2 bg-gray-500 text-white rounded-lg shadow-lg hover:bg-gray-600"
           onClick={onClose}
         >
           Cancel
         </button>
         <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600"
           onClick={onApply}
         >
           Apply
